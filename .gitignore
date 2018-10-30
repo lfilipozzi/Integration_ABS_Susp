@@ -1,0 +1,10 @@
+# Folder to ignore
+
+
+# Ignore files with following extension:
+*.slx.autosave
+*.slx.original
+*.slx.r2016b
+*.m~
+*.fuse_hidden*
+
