@@ -1,8 +1,12 @@
 clear; clc;
 close all;
 
+% Add path to CasADi and MPCTools folder
+addpath('/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi/',...
+    '/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
+
 %% Define parameters
-run parameters.m
+parameters
 
 %% Define sinusoidal road profile
 z0_road = 0.02;             % Amplitude of the road profile (m)
@@ -11,9 +15,9 @@ w_road = 2*pi/lambda_road;  % Frequency of the road profile
 d_bump = 5;                 % Distance of the bump to the start (m)
 
 % Road PSD parameters
-G = 4.6e-7;         % Roughness parameter
-p = 2.57;           % Waviness
-N = 100;            % Number of frequencies
+G = 1.7e-5;         % Roughness parameter
+p = 1.55;           % Waviness
+N = 500;            % Number of frequencies
 Lmin = 1/15;        % Smallest wavelength considered
 Lmax = 60;          % Biggest wavelength considered
 nmin = 2*pi/Lmax;   % Smallest wavenumber
@@ -26,7 +30,7 @@ A_road = sqrt(2*P*Dn);   % Amplitude
 Phase_road = 2*pi*rand(size(A_road));  % Phase
 
 % Plot road profile
-x_road = linspace(0,30,1000);
+x_road = linspace(0,100,1000);
 z_road = zeros(size(x_road));
 DzDx_road = zeros(size(x_road));
 for i = 1:length(x_road)
@@ -46,7 +50,7 @@ ylabel('dz/dx_{road} (m/s)')
 xlabel('x_{road} (m)')
 
 %% Define initial state
-U_0 = 130/3.6;
+U_0 = 60/3.6;
 disp(['Initial velocity: ',num2str(3.6*U_0),' km/h'])
 
 % Vehicle state
@@ -67,6 +71,29 @@ state_init = [0;    % pm
 
 % Brake state
 brake_init = [0; 0; 0; 0; x0];
+
+%% Define parameters of the MPC
+param = struct();
+param.m   = m;
+param.J   = J;
+param.a   = a;
+param.b   = b;
+param.ksR = ksR;
+param.ksF = ksF;
+param.bsF = bsF;
+param.bsR = bsR;
+param.kt  = kt;
+param.bt  = bt;
+param.mus = mus;
+param.rw  = rw;
+param.B   = B;
+param.C   = C;
+param.D   = D;
+param.Jw  = Jw;
+param.g   = g;
+param.mF  = mF;
+param.mR  = mR;
+param.h_susp = h_susp;
 
 %% Run simulation
 tfinal = 10;    % Duration of the simulation (s)

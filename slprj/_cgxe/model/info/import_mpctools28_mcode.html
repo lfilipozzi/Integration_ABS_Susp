@@ -1,0 +1,70 @@
+<html>
+<body>
+<script src="resources/eml_report_loadable_data.js"></script>
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="7,1" id="srcline1"> 1</a></span><span class="line"><span class="keyword">function</span> <span class="var type1" id="S2T12U3">varargout</span> = import_mpctools(<span class="var type0" id="S3T0U6">local</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="7,2" id="srcline2"> 2</a></span><span class="line"><span class="comment">% `mpctools = import_mpctools()`</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,3" id="srcline3"> 3</a></span><span class="line"><span class="comment">% `import_mpctools('*')`</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,4" id="srcline4"> 4</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,5" id="srcline5"> 5</a></span><span class="line"><span class="comment">% Returns a "module" struct with mpctools functions. This is similar to the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,6" id="srcline6"> 6</a></span><span class="line"><span class="comment">% Python construct `import mpctools`</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,7" id="srcline7"> 7</a></span><span class="line"><span class="comment">%</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,8" id="srcline8"> 8</a></span><span class="line"><span class="comment">% If the second form is used, the function handles are also created in the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,9" id="srcline9"> 9</a></span><span class="line"><span class="comment">% calling namespace. This is similar to the Python construct</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,10" id="srcline10">10</a></span><span class="line"><span class="comment">% `from mpctools import *`. Note that we do not advise using this form, as it</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,11" id="srcline11">11</a></span><span class="line"><span class="comment">% is only for lazy people who like namespace pollution.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,12" id="srcline12">12</a></span><span class="line">narginchk(0, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="7,13" id="srcline13">13</a></span><span class="line"><span class="keyword">if</span> nargin() &gt; 0 &amp;&amp; isequal(<span class="var type0" id="S3T0U21">local</span>, <span class="string">'*'</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="7,14" id="srcline14">14</a></span><span class="line">    <span class="var type0" id="S7T0U25">importstar</span> = true();</span></span>
+<span class="srcline"><span class="lineno"><a href="7,15" id="srcline15">15</a></span><span class="line">    nargoutchk(0, 0);</span></span>
+<span class="srcline"><span class="lineno"><a href="7,16" id="srcline16">16</a></span><span class="line"><span class="keyword">elseif</span> nargin() == 0</span></span>
+<span class="srcline"><span class="lineno"><a href="7,17" id="srcline17">17</a></span><span class="line">    <span class="var type0" id="S7T0U40">importstar</span> = <span class="mxinfo " id="T5:U2">false()</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,18" id="srcline18">18</a></span><span class="line">    nargoutchk(0, 1);</span></span>
+<span class="srcline"><span class="lineno"><a href="7,19" id="srcline19">19</a></span><span class="line"><span class="keyword">else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,20" id="srcline20">20</a></span><span class="line">    error(<span class="string">'Unknown argument: %s.'</span>, disp(<span class="var type0" id="S3T0U55">local</span>));</span></span>
+<span class="srcline"><span class="lineno"><a href="7,21" id="srcline21">21</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,22" id="srcline22">22</a></span><span class="line"><span class="mxinfo " id="T13:U3"><span class="var type1" id="S13T13U58">importlist</span> = <span class="mxinfo " id="T24:U5">{ <span class="keyword">...</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,23" id="srcline23">23</a></span><span class="line">    <span class="mxinfo " id="T14:U6"><span class="string">'c2d'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,24" id="srcline24">24</a></span><span class="line">    <span class="mxinfo " id="T15:U7"><span class="string">'collocweights'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,25" id="srcline25">25</a></span><span class="line">    <span class="mxinfo " id="T14:U8"><span class="string">'ekf'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,26" id="srcline26">26</a></span><span class="line">    <span class="mxinfo " id="T15:U9"><span class="string">'getCasadiFunc'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,27" id="srcline27">27</a></span><span class="line">    <span class="mxinfo " id="T16:U10"><span class="string">'getCasadiIntegrator'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,28" id="srcline28">28</a></span><span class="line">    <span class="mxinfo " id="T17:U11"><span class="string">'getCasadiDAE'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,29" id="srcline29">29</a></span><span class="line">    <span class="mxinfo " id="T18:U12"><span class="string">'getLinearizedModel'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,30" id="srcline30">30</a></span><span class="line">    <span class="mxinfo " id="T17:U13"><span class="string">'KalmanFilter'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,31" id="srcline31">31</a></span><span class="line">    <span class="mxinfo " id="T14:U14"><span class="string">'rk4'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,32" id="srcline32">32</a></span><span class="line">    <span class="mxinfo " id="T19:U15"><span class="string">'mpcplot'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,33" id="srcline33">33</a></span><span class="line">    <span class="mxinfo " id="T20:U16"><span class="string">'nlfilter'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,34" id="srcline34">34</a></span><span class="line">    <span class="mxinfo " id="T21:U17"><span class="string">'nmpc'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,35" id="srcline35">35</a></span><span class="line">    <span class="mxinfo " id="T21:U18"><span class="string">'nmhe'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,36" id="srcline36">36</a></span><span class="line">    <span class="mxinfo " id="T22:U19"><span class="string">'smushcolloc'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,37" id="srcline37">37</a></span><span class="line">    <span class="mxinfo " id="T23:U20"><span class="string">'spdinv'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,38" id="srcline38">38</a></span><span class="line">    <span class="mxinfo " id="T23:U21"><span class="string">'sstarg'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,39" id="srcline39">39</a></span><span class="line">    <span class="mxinfo " id="T20:U22"><span class="string">'jacobian'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,40" id="srcline40">40</a></span><span class="line">    <span class="mxinfo " id="T19:U23"><span class="string">'version'</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,41" id="srcline41">41</a></span><span class="line">}</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,42" id="srcline42">42</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="7,43" id="srcline43">43</a></span><span class="line"><span class="var type0" id="S14T0U98">module</span> = <span class="mxinfo " id="T25:U24">struct()</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,44" id="srcline44">44</a></span><span class="line"><span class="keyword">for</span> <span class="var type1" id="S16T1U103">i</span> = <span class="mxinfo " id="T1:U26">1</span>:<span class="mxinfo " id="T26:U27">length(<span class="var type1" id="S13T13U108">importlist</span>)</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,45" id="srcline45">45</a></span><span class="line">    <span class="var type0" id="S18T0U111">func</span> = <span class="mxinfo " id="T14:U29"><span class="var type1" id="S13T13U113">importlist</span>{<span class="var type1" id="S16T1U114">i</span>}</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="7,46" id="srcline46">46</a></span><span class="line">    <span class="message error" id="M1F28C"><span class="keyword">try</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,47" id="srcline47">47</a></span><span class="line">        <span class="var type0" id="S14T0U119">module</span>.(<span class="var type0" id="S18T0U120">func</span>) = str2func([<span class="string">'mpctools.'</span>, <span class="var type0" id="S18T0U126">func</span>]);</span></span>
+<span class="srcline"><span class="lineno"><a href="7,48" id="srcline48">48</a></span><span class="line">    <span class="keyword">catch</span> <span class="var type0" id="S20T0U128">err</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,49" id="srcline49">49</a></span><span class="line">        error(<span class="string">'Error importing %s: %s'</span>, <span class="var type0" id="S18T0U133">func</span>, <span class="var type0" id="S20T0U135">err</span>.message);</span></span>
+<span class="srcline"><span class="lineno"><a href="7,50" id="srcline50">50</a></span><span class="line">    <span class="keyword">end</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,51" id="srcline51">51</a></span><span class="line">    <span class="keyword">if</span> <span class="var type0" id="S7T0U139">importstar</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,52" id="srcline52">52</a></span><span class="line">        assignin(<span class="string">'caller'</span>, <span class="var type0" id="S18T0U144">func</span>, <span class="var type0" id="S14T0U146">module</span>.(<span class="var type0" id="S18T0U147">func</span>));</span></span>
+<span class="srcline"><span class="lineno"><a href="7,53" id="srcline53">53</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,54" id="srcline54">54</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,55" id="srcline55">55</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="7,56" id="srcline56">56</a></span><span class="line"><span class="keyword">if</span> <span class="var type0" id="S7T0U150">importstar</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,57" id="srcline57">57</a></span><span class="line">    <span class="var type0" id="S2T0U153">varargout</span> = {};</span></span>
+<span class="srcline"><span class="lineno"><a href="7,58" id="srcline58">58</a></span><span class="line"><span class="keyword">else</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,59" id="srcline59">59</a></span><span class="line">    <span class="var type0" id="S2T0U159">varargout</span> = {<span class="var type0" id="S14T0U162">module</span>};</span></span>
+<span class="srcline"><span class="lineno"><a href="7,60" id="srcline60">60</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,61" id="srcline61">61</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="7,62" id="srcline62">62</a></span><span class="line"><span class="keyword">end</span><span class="comment">%function</span></span></span>
+<span class="srcline"><span class="lineno"><a href="7,63" id="srcline63">63</a></span><span class="line"></span></span>
+</pre>
+</body>
+</html>
