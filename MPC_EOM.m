@@ -1,4 +1,4 @@
-function [state_dot] = EOM(state,input,param)
+function [state_dot] = MPC_EOM(state,input,param)
 
 %% Unstack parameters
 m      = param.m;

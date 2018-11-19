@@ -7,7 +7,7 @@ classdef MPC < matlab.System & ...
 %   The function requires the state of the model as an input and a structure
 %   which define the parameters used in the model. The equations of motion
 %   of the model have to be written in a separate function 
-%   x_dot = EOM(x,u,param).
+%   x_dot = MPC_EOM(x,u,param).
     
     % Public, tunable properties
     properties
@@ -45,7 +45,7 @@ classdef MPC < matlab.System & ...
             
             % Define the (non-linear) model
             kwargs = struct('funcname', 'ode');
-            obj.fnonlin = obj.mpc.getCasadiFunc(@(x,u) EOM(x,u,obj.param), ...
+            obj.fnonlin = obj.mpc.getCasadiFunc(@(x,u) MPC_EOM(x,u,obj.param), ...
                 [obj.Nx, obj.Nu], {'x', 'u'}, '**', kwargs);
         end
 

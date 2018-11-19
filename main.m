@@ -5,29 +5,12 @@ close all;
 addpath('/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi/',...
     '/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
 
-%% Define parameters
+%% Define vehicle and road parameters
 parameters
 
 %% Define sinusoidal road profile
-z0_road = 0.02;             % Amplitude of the road profile (m)
-lambda_road = .5;           % Wavelength of the road profile (m)
-w_road = 2*pi/lambda_road;  % Frequency of the road profile
-d_bump = 5;                 % Distance of the bump to the start (m)
-
-% Road PSD parameters
-G = 1.7e-5;         % Roughness parameter
-p = 1.55;           % Waviness
-N = 500;            % Number of frequencies
-Lmin = 1/15;        % Smallest wavelength considered
-Lmax = 60;          % Biggest wavelength considered
-nmin = 2*pi/Lmax;   % Smallest wavenumber
-nmax = 2*pi/Lmin;   % Biggest wavenumber
-Dn = (nmax - nmin)/N;
-n_road = nmin:Dn:nmax;   % Wavenumber
-S = G * n_road.^(-p);    % PSD
-P = 2 * S.*(n_road>=0);  % One side PSD
-A_road = sqrt(2*P*Dn);   % Amplitude
-Phase_road = 2*pi*rand(size(A_road));  % Phase
+roadProfile_name = 'flat';
+roadProfile_index = getRoadIndex(roadProfile_name);
 
 % Plot road profile
 x_road = linspace(0,100,1000);
@@ -36,7 +19,7 @@ DzDx_road = zeros(size(x_road));
 for i = 1:length(x_road)
     [DzDx_road(i),z_road(i)] = ...
         roadProfile(x_road(i),z0_road,lambda_road,w_road,d_bump,...
-        A_road,Phase_road,n_road);
+        A_road,Phase_road,n_road,roadProfile_index);
 end
 
 figure(1)
@@ -56,8 +39,8 @@ disp(['Initial velocity: ',num2str(3.6*U_0),' km/h'])
 % Vehicle state
 state_init = [0;    % pm
     0;          % pJ 
-    0;          % pmR
     0;          % pmF
+    0;          % pmR
     0;          % qsF
     0;          % qsR
     0;          % qtF
@@ -72,7 +55,7 @@ state_init = [0;    % pm
 % Brake state
 brake_init = [0; 0; 0; 0; x0];
 
-%% Define parameters of the MPC
+%% Define parameters of the MPC and EKF
 param = struct();
 param.m   = m;
 param.J   = J;
