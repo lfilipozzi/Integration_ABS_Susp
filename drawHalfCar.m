@@ -1,6 +1,6 @@
 function frame = drawHalfCar(vehicle,fps,a,b,mass_thick,unsprung_length,...
     h_susp,rw,z0_road,lambda_road,w_road,d_bump,mF,mR,mus,g,kt,...
-    A_road,Phase_road,n_road)
+    A_road,Phase_road,n_road,roadProfile_index)
 %DRAWHALFCAR creates an animation of the 
 
 % This function create an animation of the halfcar model on a given road
@@ -67,7 +67,7 @@ x_road = linspace(min(x)-2*b, max(x)+2*a,10000);
 z_road = zeros(size(x_road));
 for i = 1:numel(z_road)
     [~,z_road(i)] = roadProfile(x_road(i), z0_road, lambda_road, w_road, ...
-        d_bump, A_road, Phase_road, n_road);
+        d_bump, A_road, Phase_road, n_road, roadProfile_index);
 end
 plot(x_road,z_road,'k');
 
@@ -164,7 +164,7 @@ for i = 1:numel(ts)
     set(unsprungR_mass,'pos',unsprungR_rect_pos);
 
     %% Set axis and update frame
-    axis equal
+%     axis equal
     ylim([h(i)-.7 h(i)+.3])
 %     ylim([-0.02 0.06])
     xlim([x(i)-1.5*b x(i)+1.5*a])

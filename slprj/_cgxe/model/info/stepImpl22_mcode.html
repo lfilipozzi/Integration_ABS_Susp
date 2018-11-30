@@ -1,0 +1,84 @@
+<html>
+<body>
+<script src="resources/eml_report_loadable_data.js"></script>
+<div class="dead">
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="2,1" id="srcline1"> 1</a></span><span class="line"><span class="keyword">classdef</span> roadPreview &lt; matlab.System</span></span>
+<span class="srcline"><span class="lineno"><a href="2,2" id="srcline2"> 2</a></span><span class="line">    <span class="comment">% ROADPREVIEW Gives a vector of input to provide a road preview to the</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,3" id="srcline3"> 3</a></span><span class="line">    <span class="comment">% MPC.</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,4" id="srcline4"> 4</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,5" id="srcline5"> 5</a></span><span class="line">    <span class="comment">% Public, tunable properties</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,6" id="srcline6"> 6</a></span><span class="line">    <span class="keyword">properties</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,7" id="srcline7"> 7</a></span><span class="line">        Nt_MPC</span></span>
+<span class="srcline"><span class="lineno"><a href="2,8" id="srcline8"> 8</a></span><span class="line">        Ts_MPC</span></span>
+<span class="srcline"><span class="lineno"><a href="2,9" id="srcline9"> 9</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,10" id="srcline10">10</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,11" id="srcline11">11</a></span><span class="line">    <span class="keyword">properties</span>(DiscreteState)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,12" id="srcline12">12</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,13" id="srcline13">13</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,14" id="srcline14">14</a></span><span class="line">    </span></span>
+<span class="srcline"><span class="lineno"><a href="2,15" id="srcline15">15</a></span><span class="line">    <span class="keyword">properties</span>(Nontunable)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,16" id="srcline16">16</a></span><span class="line">        <span class="comment">% Structure array of parameters</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,17" id="srcline17">17</a></span><span class="line">        param = struct();</span></span>
+<span class="srcline"><span class="lineno"><a href="2,18" id="srcline18">18</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,19" id="srcline19">19</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,20" id="srcline20">20</a></span><span class="line">    <span class="comment">% Pre-computed constants</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,21" id="srcline21">21</a></span><span class="line">    <span class="keyword">properties</span>(Access = private)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,22" id="srcline22">22</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,23" id="srcline23">23</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,24" id="srcline24">24</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,25" id="srcline25">25</a></span><span class="line">    <span class="keyword">methods</span>(Access = protected)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,26" id="srcline26">26</a></span><span class="line">        <span class="keyword">function</span> setupImpl(~)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,27" id="srcline27">27</a></span><span class="line">            <span class="comment">% Perform one-time calculations, such as computing constants</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,28" id="srcline28">28</a></span><span class="line">        <span class="keyword">end</span></span></span>
+</pre>
+</div>
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="2,29" id="srcline29">29</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,30" id="srcline30">30</a></span><span class="line">        <span class="keyword">function</span> [<span class="var type1" id="S9T13U40">VinF</span>, <span class="var type0" id="S10T0U41">VinR</span>] = stepImpl(<span class="var type1" id="S11T14U44">obj</span>,<span class="var type1" id="S12T24U45">vehicle_state</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,31" id="srcline31">31</a></span><span class="line">            <span class="comment">% Implement algorithm. </span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,32" id="srcline32">32</a></span><span class="line">            </span></span>
+<span class="srcline"><span class="lineno"><a href="2,33" id="srcline33">33</a></span><span class="line">            <span class="mxinfo " id="T1:U4"><span class="var type1" id="S13T1U48">U</span>     = <span class="mxinfo " id="T1:U6"><span class="var type1" id="S12T24U50">vehicle_state</span>(<span class="mxinfo " id="T1:U8">11</span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,34" id="srcline34">34</a></span><span class="line">            <span class="mxinfo " id="T1:U9"><span class="var type1" id="S14T1U54">x</span>     = <span class="mxinfo " id="T1:U11"><span class="var type1" id="S12T24U56">vehicle_state</span>(<span class="mxinfo " id="T1:U13">14</span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,35" id="srcline35">35</a></span><span class="line">            <span class="var type0" id="S15T0U60">x_dot</span>     = <span class="var type1" id="S13T1U61">U</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,36" id="srcline36">36</a></span><span class="line">            </span></span>
+<span class="srcline"><span class="lineno"><a href="2,37" id="srcline37">37</a></span><span class="line">            <span class="comment">% Front axle</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,38" id="srcline38">38</a></span><span class="line">            <span class="mxinfo " id="T13:U15"><span class="var type1" id="S9T13U64">VinF</span> = <span class="mxinfo " id="T13:U17">zeros(<span class="mxinfo " id="T1:U18">1</span>,<span class="mxinfo " id="T1:U19"><span class="var type1" id="S11T14U69">obj</span>.Nt_MPC</span>)</span></span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,39" id="srcline39">39</a></span><span class="line">            <span class="keyword">for</span> <span class="var type1" id="S17T1U73">i</span> = <span class="mxinfo " id="T25:U22"><span class="mxinfo " id="T1:U23">1</span>:<span class="mxinfo " id="T1:U24">numel(<span class="var type1" id="S9T13U78">VinF</span>)</span></span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,40" id="srcline40">40</a></span><span class="line">                <span class="comment">% Compute longitudinal speed at the axle</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,41" id="srcline41">41</a></span><span class="line">                <span class="var type0" id="S19T0U81">x_axle</span>  = <span class="var type1" id="S14T1U84">x</span> + <span class="message error" id="M1F22C">a</span> + (<span class="var type0" id="S17T0U91">i</span>-1)*<span class="var type0" id="S13T0U93">U</span>*<span class="var type0" id="S11T0U95">obj</span>.Ts_MPC;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,42" id="srcline42">42</a></span><span class="line">                <span class="var type0" id="S21T0U99">DxDt</span> = <span class="var type0" id="S15T0U100">x_dot</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,43" id="srcline43">43</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,44" id="srcline44">44</a></span><span class="line">                <span class="comment">% Compute road input velocity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,45" id="srcline45">45</a></span><span class="line">                <span class="var type0" id="S22T0U103">DzDx</span> = roadProfile(<span class="var type0" id="S19T0U106">x_axle</span>,z0_road,lambda_road,w_road,d_bump,<span class="keyword">...</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,46" id="srcline46">46</a></span><span class="line">                    A_road,Phase_road,n_road,roadProfile_index);</span></span>
+<span class="srcline"><span class="lineno"><a href="2,47" id="srcline47">47</a></span><span class="line">                <span class="var type0" id="S9T0U126">VinF</span>(<span class="var type0" id="S17T0U127">i</span>) = <span class="var type0" id="S21T0U129">DxDt</span> * <span class="var type0" id="S22T0U130">DzDx</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,48" id="srcline48">48</a></span><span class="line">            <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,49" id="srcline49">49</a></span><span class="line">            </span></span>
+<span class="srcline"><span class="lineno"><a href="2,50" id="srcline50">50</a></span><span class="line">            </span></span>
+<span class="srcline"><span class="lineno"><a href="2,51" id="srcline51">51</a></span><span class="line">            <span class="var type0" id="S10T0U133">VinR</span> = zeros(1,<span class="var type0" id="S11T0U138">obj</span>.Nt_MPC);</span></span>
+<span class="srcline"><span class="lineno"><a href="2,52" id="srcline52">52</a></span><span class="line">            <span class="keyword">for</span> <span class="var type0" id="S17T0U142">i</span> = 1:numel(<span class="var type0" id="S10T0U147">VinR</span>)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,53" id="srcline53">53</a></span><span class="line">                <span class="comment">% Compute longitudinal speed at the axle</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,54" id="srcline54">54</a></span><span class="line">                <span class="var type0" id="S19T0U150">x_axle</span>  = <span class="var type0" id="S14T0U153">x</span> - b + (<span class="var type0" id="S17T0U160">i</span>-1)*<span class="var type0" id="S13T0U162">U</span>*<span class="var type0" id="S11T0U164">obj</span>.Ts_MPC;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,55" id="srcline55">55</a></span><span class="line">                <span class="var type0" id="S21T0U168">DxDt</span> = <span class="var type0" id="S15T0U169">x_dot</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,56" id="srcline56">56</a></span><span class="line"></span></span>
+<span class="srcline"><span class="lineno"><a href="2,57" id="srcline57">57</a></span><span class="line">                <span class="comment">% Compute road input velocity</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,58" id="srcline58">58</a></span><span class="line">                <span class="var type0" id="S22T0U172">DzDx</span> = roadProfile(<span class="var type0" id="S19T0U175">x_axle</span>,z0_road,lambda_road,w_road,d_bump,<span class="keyword">...</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,59" id="srcline59">59</a></span><span class="line">                    A_road,Phase_road,n_road,roadProfile_index);</span></span>
+<span class="srcline"><span class="lineno"><a href="2,60" id="srcline60">60</a></span><span class="line">                <span class="var type0" id="S10T0U195">VinR</span>(<span class="var type0" id="S17T0U196">i</span>) = <span class="var type0" id="S21T0U198">DxDt</span> * <span class="var type0" id="S22T0U199">DzDx</span>;</span></span>
+<span class="srcline"><span class="lineno"><a href="2,61" id="srcline61">61</a></span><span class="line">            <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,62" id="srcline62">62</a></span><span class="line">        <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,63" id="srcline63">63</a></span><span class="line"></span></span>
+</pre>
+<div class="dead">
+<pre class="code">
+<span class="srcline"><span class="lineno"><a href="2,64" id="srcline64">64</a></span><span class="line">        <span class="keyword">function</span> resetImpl(~)</span></span>
+<span class="srcline"><span class="lineno"><a href="2,65" id="srcline65">65</a></span><span class="line">            <span class="comment">% Initialize / reset discrete-state properties</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,66" id="srcline66">66</a></span><span class="line">        <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,67" id="srcline67">67</a></span><span class="line">    <span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,68" id="srcline68">68</a></span><span class="line"><span class="keyword">end</span></span></span>
+<span class="srcline"><span class="lineno"><a href="2,69" id="srcline69">69</a></span><span class="line"> </span></span>
+</pre>
+</div>
+</body>
+</html>

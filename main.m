@@ -5,11 +5,14 @@ close all;
 addpath('/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi/',...
     '/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
 
+% addpath('D:/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi_win/',...
+%     'D:/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
+
 %% Define vehicle and road parameters
 parameters
 
 %% Define sinusoidal road profile
-roadProfile_name = 'flat';
+roadProfile_name = 'sinusoidal';
 roadProfile_index = getRoadIndex(roadProfile_name);
 
 % Plot road profile
@@ -33,7 +36,7 @@ ylabel('dz/dx_{road} (m/s)')
 xlabel('x_{road} (m)')
 
 %% Define initial state
-U_0 = 60/3.6;
+U_0 = 50/3.6;
 disp(['Initial velocity: ',num2str(3.6*U_0),' km/h'])
 
 % Vehicle state
@@ -55,28 +58,73 @@ state_init = [0;    % pm
 % Brake state
 brake_init = [0; 0; 0; 0; x0];
 
-%% Define parameters of the MPC and EKF
-param = struct();
-param.m   = m;
-param.J   = J;
-param.a   = a;
-param.b   = b;
-param.ksR = ksR;
-param.ksF = ksF;
-param.bsF = bsF;
-param.bsR = bsR;
-param.kt  = kt;
-param.bt  = bt;
-param.mus = mus;
-param.rw  = rw;
-param.B   = B;
-param.C   = C;
-param.D   = D;
-param.Jw  = Jw;
-param.g   = g;
-param.mF  = mF;
-param.mR  = mR;
-param.h_susp = h_susp;
+%% Define parameters of the MPC
+param_F = struct();
+param_F.ks  = ksF;
+param_F.bs  = bsF;
+param_F.kt  = kt;
+param_F.mus = mus;
+param_F.rw  = rw;
+param_F.B   = B;
+param_F.C   = C;
+param_F.D   = D;
+param_F.Jw  = Jw;
+param_F.g   = g;
+param_F.msp = mF;
+
+param_R = struct();
+param_R.ks  = ksR;
+param_R.bs  = bsR;
+param_R.kt  = kt;
+param_R.mus = mus;
+param_R.rw  = rw;
+param_R.B   = B;
+param_R.C   = C;
+param_R.D   = D;
+param_R.Jw  = Jw;
+param_R.g   = g;
+param_R.msp = mR;
+
+sx_ref = 0.1;
+
+%% Set MPC parameters
+Ts_MPC = 0.1;  % MPC sampling time
+Nt_MPC = 20;    % MPC horizon
+Nx_MPC = 5;     % Number of states of the MPC model
+Nu_MPC = 3;     % Number of inputs of MPC model (input and previeed disturbances)
+
+set_param('model/MPC Front/MPC',...
+    'Delta',num2str(Ts_MPC),...
+    'Nx'   ,num2str(Nx_MPC),...
+    'Nu'   ,num2str(Nu_MPC),...
+    'Nt'   ,num2str(Nt_MPC),...
+    'param','param_F')
+
+set_param('model/MPC Rear/MPC',...
+    'Delta',num2str(Ts_MPC),...
+    'Nx'   ,num2str(Nx_MPC),...
+    'Nu'   ,num2str(Nu_MPC),...
+    'Nt'   ,num2str(Nt_MPC),...
+    'param','param_R')
+
+% Need to use MATLAB System for road preview since MATLAB thinks the size
+% of the matrix is changing over time but this is wrong
+param_road = struct();
+param_road.a = a;
+param_road.b = b;
+param_road.z0_road = z0_road;
+param_road.w_road = w_road;
+param_road.lambda_road = lambda_road;
+param_road.d_bump = d_bump;
+param_road.A_road = A_road;
+param_road.Phase_road = Phase_road;
+param_road.n_road = n_road;
+param_road.roadProfile_index = roadProfile_index;
+
+set_param('model/Vehicle/Road preview',...
+    'Nt_MPC',num2str(Nt_MPC),...
+    'Ts_MPC',num2str(Ts_MPC),...
+    'param' ,'param_road')
 
 %% Run simulation
 tfinal = 10;    % Duration of the simulation (s)
@@ -174,7 +222,8 @@ plot(vehicle.h)
 %% Plot animation
 % fps = 6;
 % frame = drawHalfCar(vehicle,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
-%     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road);
+%     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
+%     roadProfile_index);
 % % movie(frame,1,fps)
 
 

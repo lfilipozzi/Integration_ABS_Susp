@@ -14,15 +14,15 @@ classdef MPC < matlab.System & ...
         % Sampling time
         Delta = 0.01;
         % Number of state
-        Nx = 12;
+        Nx = 5;
         % Number of input
-        Nu = 4;
+        Nu = 3;
         % Prediction horizon
         Nt = 20;
     end
 
     properties(Nontunable)
-        % Strurture array of parameters
+        % Structure array of parameters
         param = struct();
     end
 
@@ -49,33 +49,34 @@ classdef MPC < matlab.System & ...
                 [obj.Nx, obj.Nu], {'x', 'u'}, '**', kwargs);
         end
 
-        function u = stepImpl(obj,x)
+        function u = stepImpl(obj,tau_ref,sx_ref,road_prev,Q,R1,R2,P,x)
             % Implement algorithm. 
             
             % +---------------------------+
             % |       Define model        |
             % +---------------------------+
             % Find steady-state condition for linearization
-            [xss, uss] = steadyState(x,ones(4,1),obj.param);
+            % TODO: instead of using zeros(2,1) use preceding value
+            [xss, uss] = steadyState(x,zeros(3,1),obj.param);
             
             % Linearize the model
             linmodel = obj.mpc.getLinearizedModel(obj.fnonlin, ...
-                {xss, uss}, {'A', 'B'}, obj.Delta); 
-
+                {xss, uss}, {'A','B'}, obj.Delta); 
+            linmodel.A
+            linmodel.B
+            linmodel.A(5,:)
             % Define the linearized model (x_dot = A*x+Bu)
-            Flin = obj.mpc.getCasadiFunc(@(x, u) linmodel.A*x + linmodel.B*u, ...
-                [obj.Nx, obj.Nu], {'x', 'u'}, {'dintlin'}); 
+            Flin = obj.mpc.getCasadiFunc(@(x,u) linmodel.A*x + linmodel.B*u, ...
+                [obj.Nx, obj.Nu], {'x','u'}, {'dintlin'}); 
             
             % +---------------------------+
             % |   Define cost function    |
             % +---------------------------+
             % Stage cost function
-            Q = eye(obj.Nx);
-            R = eye(obj.Nu);
-            stagecost = @(x,u) (x'*Q*x + u'*R*u)/2;
+            stagecost = @(x,u) ((x(5)-sx_ref)'*Q*(x(5)-sx_ref) + ...
+                (u(2) - tau_ref)'*R1*(u(2) - tau_ref) + u'*R2*u);
 
             % Terminal cost function
-            P = eye(obj.Nx);
             termcost = @(x) (x'*P*x)/2;
 
             % Define CasADi cost functions
@@ -86,16 +87,23 @@ classdef MPC < matlab.System & ...
             % +---------------------------+
             % |       Define bounds       |
             % +---------------------------+
-            max_x = Inf;
-            max_u = 0.1;
-
+            % TODO: use polytopic constraint with e and ef for SAS
+            % TODO: use max and min value for input bounds
             lb = struct();
-            lb.u = -ones(obj.Nu, obj.Nt)*max_u;
-            lb.x = -ones(1,obj.Nt+1)*Inf;
+            lb.u = -inf(obj.Nu, obj.Nt);
+            lb.x = -inf(1,obj.Nt+1);
 
             ub = struct();
-            ub.u = ones(obj.Nu, obj.Nt)*max_u;
-            ub.x = ones(obj.Nx, obj.Nt+1)*max_x;
+            ub.u = inf(obj.Nu, obj.Nt);
+            ub.u(2) = 0;    % Braking torque always negative
+            ub.x = inf(obj.Nx, obj.Nt+1);
+            
+            % +---------------------------+
+            % |    Define constraints     |
+            % +---------------------------+
+%             e = obj.mpc.getCasadiFunc(@(x,u) MPC_constraint(x,u,obj.param), ...
+%                       [obj.Nx, obj.Nu], {'x', 'u'}, {'e'});
+%             ef = e; % Use same constraint for terminal state.
             
             % +---------------------------+
             % |        Build solver       |
@@ -104,14 +112,22 @@ classdef MPC < matlab.System & ...
             N = struct('x', obj.Nx, 'u', obj.Nu, 't', obj.Nt); 
             % Define cost function and bounds
             kwargs = struct('l', l, 'Vf', Vf, 'lb', lb, 'ub', ub, ...
-                'verbosity',0);
+                'verbosity',0); %'e', e, 'ef', ef,...
             % Build MPC solver
             solver = obj.mpc.nmpc('f', Flin, 'N', N, '**', kwargs);
             
             % +---------------------------+
             % |     Solve MPC problem     |
             % +---------------------------+
+            % Set initial state to current state
             solver.fixvar('x', 1, x);
+            
+            % Feed the road preview information to the MPC
+            for k = 1:obj.Nt
+                solver.fixvar('u', k, road_prev(:,k),3)
+            end
+            
+            % Solve the MPC problem
             solver.solve();
 
             % Return error if the problem has not been solved
@@ -145,6 +161,10 @@ classdef MPC < matlab.System & ...
             % system is running
             flag = true;
         end
+        
+        function flag = isOutputFixedSizeImpl(~)
+            flag = true;
+        end
 
         function out = getOutputSizeImpl(obj)
             % Return size for each output port
@@ -152,6 +172,14 @@ classdef MPC < matlab.System & ...
 
             % Example: inherit size from first input port
             % out = propagatedInputSize(obj,1);
+        end
+        
+        function out1 = getOutputDataTypeImpl(~)
+            out1 = 'double';
+        end
+        
+        function c1 = isOutputComplexImpl(~)
+            c1 = false;
         end
     end
 end

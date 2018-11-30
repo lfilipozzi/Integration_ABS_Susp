@@ -65,10 +65,10 @@ bcR = 2*zetac*omegasR*mR;
 
 %% Road parameters
 % Deterministic road parameters
-z0_road = 0.02;             % Amplitude of the road profile (m)
-lambda_road = .5;           % Wavelength of the road profile (m)
-w_road = 2*pi/lambda_road;  % Frequency of the road profile
-d_bump = 5;                 % Distance of the bump to the start (m)
+z0_road = 0.02;                 % Amplitude of the road profile (m)
+lambda_road = 50/3.6;           % Wavelength of the road profile (m)
+w_road = 5*2*pi/lambda_road;    % Frequency of the road profile
+d_bump = 5;                     % Distance of the bump to the start (m)
 
 % Random road parameters
 G = 1.7e-5;         % Roughness parameter

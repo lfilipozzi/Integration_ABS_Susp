@@ -1,5 +1,5 @@
 # Folder to ignore
-
+Constraints/
 
 # Ignore files with following extension:
 *.slx.autosave
