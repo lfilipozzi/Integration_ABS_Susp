@@ -18,6 +18,7 @@ function roadProfile_index = getRoadIndex(roadProfile_name)
             roadProfile_index = 3;
             disp('Road profile: random')
         otherwise
-            error('Unknowns road profile')
+            error(['Unknowns road profile "', roadProfile_name, ...
+                '". Please select one value among: "flat", "bump", "sinusoidal", and "random".'])
     end
 end

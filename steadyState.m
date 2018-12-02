@@ -32,9 +32,10 @@ sx_ss   = sx;
 Fc_ss  = 0;
 tau_ss = rw*fx * (1+Jw/(msp*rw^2)*(1+sx));
 vin_ss = 0;
+tau_ref_ss = 0;
 
 xss = [pspr_ss; puns_ss; qs_ss; qt_ss; sx_ss];
-uss = [Fc_ss; tau_ss; vin_ss];
+uss = [Fc_ss; tau_ss; vin_ss; tau_ref_ss];
 
 end
 

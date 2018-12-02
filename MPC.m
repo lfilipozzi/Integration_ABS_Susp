@@ -19,6 +19,8 @@ classdef MPC < matlab.System & ...
         Nu = 3;
         % Prediction horizon
         Nt = 20;
+        % Slip target for SC
+        sx_ref = -0.3;
     end
 
     properties(Nontunable)
@@ -72,7 +74,7 @@ classdef MPC < matlab.System & ...
             [xss, uss] = steadyState(0,obj.param);
             ss_condition_TC = struct('xss',xss,'uss',uss);
             % For slip control (ABS engaged)
-            [xss, uss] = steadyState(-0.3,obj.param);
+            [xss, uss] = steadyState(-0.35,obj.param);
             ss_condition_SC = struct('xss',xss,'uss',uss);
             
             % +---------------------------+
@@ -82,26 +84,45 @@ classdef MPC < matlab.System & ...
             sx_norm  = 0.1;
             tau_norm = 1000;
             Fc_norm  = 1000;
+            qt_norm  = 0.01;
             
-            sx_ref = -0.3;
-            tau_ref = -200;
+            % Weight on states
+            qqt = 50;       % Weight on qt
+            % Weights for torque control
+            q1_TC = 0;      % Tracking of slip
+            q2_TC = 1000;   % Tracking of torque
+            % Weights for slip control
+            q1_SC = 1000;   % Tracking of slip
+            q2_SC = 0;      % Tracking of torque
+            % Weight on actuator
+            qFc  = 0.01;    % Weight on Fc
+            qtau = 1;       % Weight on tau
             
-            q1 = 1*1000;
-            q2 = 0*1000;
+            Q_TC  = q1_TC * 1/sx_norm^2;
+            R1_TC = q2_TC * 1/tau_norm^2;
+            R2_TC = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
+            P_TC  = diag([0 0 0 0 0]);
             
-            Q  = q1 * 1/sx_norm^2;
-            R1 = q2 * 1/tau_norm^2;
-            R2 = diag([1/tau_norm^2 0.01/Fc_norm^2 0]);
-            P  = diag([0 0 0 0 0]);
+            Q_SC  = q1_SC * 1/sx_norm^2;
+            R1_SC = q2_SC * 1/tau_norm^2;
+            R2_SC = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
+            P_SC  = diag([0 0 0 0 0]);
+            
+            % x(4) is qt
+            % x(5) is the longitudinal slip sx
+            % u(2) is the brake torque
+            % u(4) is the requested torque tau_ref
             
             % For torque control (ABS disengaged)
-            stagecost_TC = @(x,u) ((x(5)-sx_ref)'*Q*(x(5)-sx_ref) + ...
-                (u(2) - tau_ref)'*R1*(u(2) - tau_ref) + u'*R2*u);
-            termcost_TC = @(x) (x'*P*x)/2;
+            stagecost_TC = @(x,u) (x(4)'*qqt/qt_norm^2*x(4) + ...
+                (x(5)-obj.sx_ref)'*Q_TC*(x(5)-obj.sx_ref) + ...
+                (u(2) - u(4))'*R1_TC*(u(2) - u(4)) + u(1:2)'*R2_TC*u(1:2));
+            termcost_TC = @(x) (x'*P_TC*x)/2;
             % For slip control (ABS engaged)
-            stagecost_SC = @(x,u) ((x(5)-sx_ref)'*Q*(x(5)-sx_ref) + ...
-                (u(2) - tau_ref)'*R1*(u(2) - tau_ref) + u'*R2*u);
-            termcost_SC = @(x) (x'*P*x)/2;
+            stagecost_SC = @(x,u) (x(4)'*qqt/qt_norm^2*x(4) + ...
+                (x(5)-obj.sx_ref)'*Q_SC*(x(5)-obj.sx_ref) + ...
+                (u(2) - u(4))'*R1_SC*(u(2) - u(4)) + u(1:2)'*R2_SC*u(1:2));
+            termcost_SC = @(x) (x'*P_SC*x)/2;
             
             % +---------------------------+
             % |     Define constraints    |
@@ -134,8 +155,8 @@ classdef MPC < matlab.System & ...
             obj.solver_SC_vPos = obj.buildMPCSolver(ss_condition_SC, stagecost_SC, termcost_SC, constraint_vPos);
         end
 
-        function [u, solveTime, solverUsed] = stepImpl(obj, road_prev, ...
-                x, ABS_flag)
+        function [u, solveTime, solverUsed] = stepImpl(obj, tau_ref, ...
+                road_prev, x, ABS_flag)
             % Implement algorithm. 
             
             tic;
@@ -150,24 +171,24 @@ classdef MPC < matlab.System & ...
             
             if ABS_flag == 1    % ABS is not engaged (torque control)
                 if vrel < vm
-                    u = solveMPC(obj, obj.solver_TC_vNeg, road_prev, x);
+                    u = solveMPC(obj, obj.solver_TC_vNeg, tau_ref, road_prev, x);
                     solverUsed = 1;
                 elseif vrel <= vp
-                    u = solveMPC(obj, obj.solver_TC_vNeu, road_prev, x);
+                    u = solveMPC(obj, obj.solver_TC_vNeu, tau_ref, road_prev, x);
                     solverUsed = 2;
                 else
-                    u = solveMPC(obj, obj.solver_TC_vPos, road_prev, x);
+                    u = solveMPC(obj, obj.solver_TC_vPos, tau_ref, road_prev, x);
                     solverUsed = 3;
                 end
             else                % ABS is engaged slip control)
                 if vrel < vm
-                    u = solveMPC(obj, obj.solver_TC_vNeg, road_prev, x);
+                    u = solveMPC(obj, obj.solver_SC_vNeg, tau_ref, road_prev, x);
                     solverUsed = 4;
                 elseif vrel <= vp
-                    u = solveMPC(obj, obj.solver_TC_vNeu, road_prev, x);
+                    u = solveMPC(obj, obj.solver_SC_vNeu, tau_ref, road_prev, x);
                     solverUsed = 5;
                 else
-                    u = solveMPC(obj, obj.solver_TC_vPos, road_prev, x);
+                    u = solveMPC(obj, obj.solver_SC_vPos, tau_ref, road_prev, x);
                     solverUsed = 6;
                 end
             end
@@ -201,13 +222,16 @@ classdef MPC < matlab.System & ...
                 [obj.Nx, obj.Nu], {'x', 'u'}, '**', kwargs);
             
             % Linearize and discretize the model
+            xss = ss_condition.xss;
+            uss = ss_condition.uss;
             linmodel = mpc.getLinearizedModel(fnonlin, ...
-                {ss_condition.xss, ss_condition.uss}, {'A','B'}, ...
-                obj.Delta); 
+                {xss, uss}, {'A','B'}, obj.Delta);
             
             % Define the linearized model (x_dot = A*x+Bu)
-            Flin = mpc.getCasadiFunc(@(x,u) linmodel.A*x + linmodel.B*u, ...
+            Flin = mpc.getCasadiFunc(@(x,u) xss + linmodel.A*(x-xss) + linmodel.B*(u-uss), ...
                 [obj.Nx, obj.Nu], {'x','u'}, {'dintlin'}); 
+%             Flin = mpc.getCasadiFunc(@(x,u) linmodel.A*x + linmodel.B*u, ...
+%                 [obj.Nx, obj.Nu], {'x','u'}, {'dintlin'}); 
             
             % +---------------------------+
             % |   Define cost function    |
@@ -252,11 +276,16 @@ classdef MPC < matlab.System & ...
         end
         
         %% Solve MPC problem
-        function u = solveMPC(obj, solver, road_prev, x)
+        function u = solveMPC(obj, solver, tau_ref, road_prev, x)
             % Solve the MPC Problem for a given solver
             
             % Set initial state to current state
             solver.fixvar('x', 1, x);
+            
+            % Set reference signals
+            for k = 1:obj.Nt
+                solver.fixvar('u', k, tau_ref, 4);
+            end
             
             % Feed the road preview information to the MPC
             for k = 1:obj.Nt

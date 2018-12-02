@@ -12,7 +12,8 @@ addpath('/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools
 parameters
 
 %% Define sinusoidal road profile
-roadProfile_name = 'flat'%'sinusoidal';
+% Choose road profile. Possible values: '
+roadProfile_name = 'sinusoidal';
 roadProfile_index = getRoadIndex(roadProfile_name);
 
 % Plot road profile
@@ -105,33 +106,34 @@ param_R.b3  = b3;
 param_R.b4  = b4;
 param_R.b5  = b5;
 
-sx_ref = -0.1;
-
 %% ABS parameters
-sxABSon_F = -0.2;
-sxABSon_R = -0.2;
+sxABSon_F = -0.25;
+sxABSon_R = -0.25;
 sxABSoff  = -0.1;
 
 %% Set MPC parameters
 Ts_MPC = 0.05;  % MPC sampling time
 Nt_MPC = 40;    % MPC horizon
 Nx_MPC = 5;     % Number of states of the MPC model
-Nu_MPC = 3;     % Number of inputs of MPC model (including input and 
-                % previewed disturbances)
+Nu_MPC = 4;     % Number of inputs of MPC model (including input and 
+                % previewed disturbances and reference signals)
+sx_ref = -0.2;  % Slip target when ABS is engaged
 
 set_param('model/MPC Front/MPC',...
-    'Delta',num2str(Ts_MPC),...
-    'Nx'   ,num2str(Nx_MPC),...
-    'Nu'   ,num2str(Nu_MPC),...
-    'Nt'   ,num2str(Nt_MPC),...
-    'param','param_F')
+    'Delta' ,num2str(Ts_MPC),...
+    'Nx'    ,num2str(Nx_MPC),...
+    'Nu'    ,num2str(Nu_MPC),...
+    'Nt'    ,num2str(Nt_MPC),...
+    'sx_ref',num2str(sx_ref),...
+    'param' ,'param_F')
 
 set_param('model/MPC Rear/MPC',...
-    'Delta',num2str(Ts_MPC),...
-    'Nx'   ,num2str(Nx_MPC),...
-    'Nu'   ,num2str(Nu_MPC),...
-    'Nt'   ,num2str(Nt_MPC),...
-    'param','param_R')
+    'Delta' ,num2str(Ts_MPC),...
+    'Nx'    ,num2str(Nx_MPC),...
+    'Nu'    ,num2str(Nu_MPC),...
+    'Nt'    ,num2str(Nt_MPC),...
+    'sx_ref',num2str(sx_ref),...
+    'param' ,'param_R')
 
 % Need to use MATLAB System for road preview since MATLAB thinks the size
 % of the matrix is changing over time but this is wrong
@@ -153,15 +155,16 @@ set_param('model/Vehicle/Road preview',...
     'param' ,'param_road')
 
 %% Run simulation
+vehicle = timeseries();
 tfinal = 10;    % Duration of the simulation (s)
 sim('model.slx')
 
 %% Plot
-% Plot theta
-figure(2)
-plot(vehicle.theta*180/pi)
-ylabel('Theta (deg)')
-title('Theta vs time')
+% % Plot theta
+% figure(2)
+% plot(vehicle.theta*180/pi)
+% ylabel('Theta (deg)')
+% title('Theta vs time')
 
 % Plot longitudinal force and slip vs time and force vs slip
 figure(3)
@@ -203,28 +206,28 @@ xlabel('Time (s)')
 ylabel('Vertical force (N)')
 title('Vertical force vs time')
 
-% Suspension and tire displacement
-figure(5)
-% Suspension displacement
-subplot(2,1,1)
-hold on
-box on
-plot(vehicle.qsF)
-plot(vehicle.qsR)
-legend('Front','Rear')
-ylabel({'Suspension';'displacement'})
-% Tire displacement
-subplot(2,1,2)
-hold on
-box on
-plot(vehicle.qtF)
-plot(vehicle.qtR)
-ylabel({'Tire';'displacement'})
-xlabel('Time (s)')
+% % Suspension and tire displacement
+% figure(5)
+% % Suspension displacement
+% subplot(2,1,1)
+% hold on
+% box on
+% plot(vehicle.qsF)
+% plot(vehicle.qsR)
+% legend('Front','Rear')
+% ylabel({'Suspension';'displacement'})
+% % Tire displacement
+% subplot(2,1,2)
+% hold on
+% box on
+% plot(vehicle.qtF)
+% plot(vehicle.qtR)
+% ylabel({'Tire';'displacement'})
+% xlabel('Time (s)')
 
-% Heave
-figure(6)
-plot(vehicle.h)
+% % Heave
+% figure(6)
+% plot(vehicle.h)
 
 % Vehicle speed
 figure(7)

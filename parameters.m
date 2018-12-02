@@ -32,7 +32,7 @@ Jw = 0.9;               % Moment of inertia of the wheel (kg.m^2)
 rw = 0.3;               % Nominal wheel radius with load (m)
 B = 7.10;               % Pacejka's B coefficient (-)
 C = 1.4;                % Pacejka's C coefficient (-)
-D = 1;                  % Pacejka's D coefficient (-)
+D = 0.5;                % Pacejka's D coefficient (-)
 
 %% Brake parameters
 mcyl = 0.75;            % Piston mass (kg)
@@ -79,7 +79,7 @@ a5 = -1800;
 % Deterministic road parameters
 z0_road = 0.02;                 % Amplitude of the road profile (m)
 lambda_road = 50/3.6;           % Wavelength of the road profile (m)
-w_road = 5*2*pi/lambda_road;    % Frequency of the road profile
+w_road = 2*2*pi/lambda_road;    % Frequency of the road profile
 d_bump = 5;                     % Distance of the bump to the start (m)
 
 % Random road parameters
