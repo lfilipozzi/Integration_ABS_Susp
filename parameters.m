@@ -63,6 +63,18 @@ omegasR = 2*pi*1.2;
 bcF = 2*zetac*omegasF*mF;
 bcR = 2*zetac*omegasR*mR;
 
+% Parameters used to define suspension bounds
+b1 = 3000/0.4;
+a1 = 0;
+b2 = 1200/0.4;
+a2 = 1800;
+b3 = 1000/0.6;
+a3 = 100;
+b4 = 1000/0.6;
+a4 = -100;
+b5 = 1200/0.4;
+a5 = -1800;
+
 %% Road parameters
 % Deterministic road parameters
 z0_road = 0.02;                 % Amplitude of the road profile (m)

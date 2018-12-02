@@ -12,7 +12,7 @@ addpath('/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools
 parameters
 
 %% Define sinusoidal road profile
-roadProfile_name = 'sinusoidal';
+roadProfile_name = 'flat'%'sinusoidal';
 roadProfile_index = getRoadIndex(roadProfile_name);
 
 % Plot road profile
@@ -36,7 +36,7 @@ ylabel('dz/dx_{road} (m/s)')
 xlabel('x_{road} (m)')
 
 %% Define initial state
-U_0 = 50/3.6;
+U_0 = 100/3.6;
 disp(['Initial velocity: ',num2str(3.6*U_0),' km/h'])
 
 % Vehicle state
@@ -71,6 +71,16 @@ param_F.D   = D;
 param_F.Jw  = Jw;
 param_F.g   = g;
 param_F.msp = mF;
+param_F.a1  = a1;
+param_F.a2  = a2;
+param_F.a3  = a3;
+param_F.a4  = a4;
+param_F.a5  = a5;
+param_F.b1  = b1;
+param_F.b2  = b2;
+param_F.b3  = b3;
+param_F.b4  = b4;
+param_F.b5  = b5;
 
 param_R = struct();
 param_R.ks  = ksR;
@@ -84,14 +94,30 @@ param_R.D   = D;
 param_R.Jw  = Jw;
 param_R.g   = g;
 param_R.msp = mR;
+param_R.a1  = a1;
+param_R.a2  = a2;
+param_R.a3  = a3;
+param_R.a4  = a4;
+param_R.a5  = a5;
+param_R.b1  = b1;
+param_R.b2  = b2;
+param_R.b3  = b3;
+param_R.b4  = b4;
+param_R.b5  = b5;
 
-sx_ref = 0.1;
+sx_ref = -0.1;
+
+%% ABS parameters
+sxABSon_F = -0.2;
+sxABSon_R = -0.2;
+sxABSoff  = -0.1;
 
 %% Set MPC parameters
-Ts_MPC = 0.1;  % MPC sampling time
-Nt_MPC = 20;    % MPC horizon
+Ts_MPC = 0.05;  % MPC sampling time
+Nt_MPC = 40;    % MPC horizon
 Nx_MPC = 5;     % Number of states of the MPC model
-Nu_MPC = 3;     % Number of inputs of MPC model (input and previeed disturbances)
+Nu_MPC = 3;     % Number of inputs of MPC model (including input and 
+                % previewed disturbances)
 
 set_param('model/MPC Front/MPC',...
     'Delta',num2str(Ts_MPC),...
@@ -199,6 +225,14 @@ xlabel('Time (s)')
 % Heave
 figure(6)
 plot(vehicle.h)
+
+% Vehicle speed
+figure(7)
+hold on
+box on
+plot(vehicle.U)
+plot(rw*vehicle.wF)
+plot(rw*vehicle.wR)
 
 %% Plot position of wheels
 % z_tire_F = zeros(size(vehicle.x.Data));

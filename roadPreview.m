@@ -32,15 +32,15 @@ classdef roadPreview < matlab.System & ...
         function [VinF, VinR] = stepImpl(obj,vehicle_state)
             % Implement algorithm. 
             
-            a = obj.param.a;
-            b = obj.param.b;
-            z0_road = obj.param.z0_road;
-            w_road = obj.param.w_road;
+            a           = obj.param.a;
+            b           = obj.param.b;
+            z0_road     = obj.param.z0_road;
+            w_road      = obj.param.w_road;
             lambda_road = obj.param.lambda_road;
-            d_bump = obj.param.d_bump;
-            A_road = obj.param.A_road;
-            Phase_road = obj.param.Phase_road;
-            n_road = obj.param.n_road;
+            d_bump      = obj.param.d_bump;
+            A_road      = obj.param.A_road;
+            Phase_road  = obj.param.Phase_road;
+            n_road      = obj.param.n_road;
             roadProfile_index = obj.param.roadProfile_index;
             
             U     = vehicle_state(11);
@@ -87,7 +87,7 @@ classdef roadPreview < matlab.System & ...
         
         %% Simulink functions
         function ds = getDiscreteStateImpl(~)
-            % Return structure of properties with DiscreteState attribute
+            % Return structure of pro   perties with DiscreteState attribute
             ds = struct([]);
         end
 
