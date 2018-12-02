@@ -81,13 +81,15 @@ classdef MPC < matlab.System & ...
             % |       Cost function       |
             % +---------------------------+
             % Stage cost and terminal cost
-            sx_norm  = 0.1;
-            tau_norm = 1000;
-            Fc_norm  = 1000;
-            puns_norm  = 30;
+            sx_norm   = 0.1;
+            tau_norm  = 1000;
+            Fc_norm   = 1000;
+            puns_norm = 50;
+            psp_norm  = 50;
             
             % Weight on states
-            qpuns = 50;       % Weight on qt
+            qpuns = 50;     % Weight on puns
+            qpsp  = 50;     % Weight on qpsp
             % Weights for torque control
             q1_TC = 0;      % Tracking of slip
             q2_TC = 1000;   % Tracking of torque
@@ -108,13 +110,14 @@ classdef MPC < matlab.System & ...
             R2_SC = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
             P_SC  = diag([0 0 0 0 0]);
             
-            % x(4) is qt
+            % x(1) is the sprung mass momentum
+            % x(2) is the unpsrung mass momentum
             % x(5) is the longitudinal slip sx
             % u(2) is the brake torque
             % u(4) is the requested torque tau_ref
             
             % For torque control (ABS disengaged)
-            stagecost_TC = @(x,u) (x(2)'*qpuns/puns_norm^2*x(2) + ...
+            stagecost_TC = @(x,u) (x(1)'*qpsp/psp_norm^2*x(1) + ...
                 (x(5)-obj.sx_ref)'*Q_TC*(x(5)-obj.sx_ref) + ...
                 (u(2) - u(4))'*R1_TC*(u(2) - u(4)) + u(1:2)'*R2_TC*u(1:2));
             termcost_TC = @(x) (x'*P_TC*x)/2;
