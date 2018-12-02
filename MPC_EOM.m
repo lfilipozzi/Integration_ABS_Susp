@@ -13,7 +13,7 @@ Jw  = param.Jw;
 g   = param.g;
 msp = param.msp;
 
-V = 50/3.6;
+V = 15/3.6;
 
 %% Unstack input vector
 Fc  = input(1);
