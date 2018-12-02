@@ -26,15 +26,15 @@ for i = 1:length(x_road)
         A_road,Phase_road,n_road,roadProfile_index);
 end
 
-figure(1)
-clf
-subplot(2,1,1)
-plot(x_road,z_road)
-ylabel('z_{road} (m)')
-subplot(2,1,2)
-plot(x_road,DzDx_road)
-ylabel('dz/dx_{road} (m/s)')
-xlabel('x_{road} (m)')
+% figure(1)
+% clf
+% subplot(2,1,1)
+% plot(x_road,z_road)
+% ylabel('z_{road} (m)')
+% subplot(2,1,2)
+% plot(x_road,DzDx_road)
+% ylabel('dz/dx_{road} (m/s)')
+% xlabel('x_{road} (m)')
 
 %% Define initial state
 U_0 = 100/3.6;
@@ -107,9 +107,10 @@ param_R.b4  = b4;
 param_R.b5  = b5;
 
 %% ABS parameters
-sxABSon_F = -0.25;
-sxABSon_R = -0.25;
-sxABSoff  = -0.1;
+sx_ref = -0.2;%-1/B*tan(pi/(2*C)); % Slip target when ABS is engaged
+sxABSon_F = 1.4*sx_ref;%-0.25;
+sxABSon_R = 1.4*sx_ref;%-0.25;
+sxABSoff  = 0.6*sx_ref;%-0.1;
 
 %% Set MPC parameters
 Ts_MPC = 0.05;  % MPC sampling time
@@ -117,7 +118,6 @@ Nt_MPC = 40;    % MPC horizon
 Nx_MPC = 5;     % Number of states of the MPC model
 Nu_MPC = 4;     % Number of inputs of MPC model (including input and 
                 % previewed disturbances and reference signals)
-sx_ref = -0.2;  % Slip target when ABS is engaged
 
 set_param('model/MPC Front/MPC',...
     'Delta' ,num2str(Ts_MPC),...

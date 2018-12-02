@@ -6,7 +6,7 @@ run EOM.m
 
 % Define inputs and outputs
 u = [viF viR tauf taur];
-y = [pm/m pJ/J U_dot];
+y = [vF vR sFx sRx];
 
 % Compute the symbolic Jacobian matrices
 A_sym = jacobian(dx,x);
@@ -49,16 +49,23 @@ Gp.InputName{1} = 'viF';
 Gp.InputName{2} = 'viR';
 Gp.InputName{3} = 'tauF';
 Gp.InputName{4} = 'tauR';
-Gp.OutputName{1} = 'V';
-Gp.OutputName{2} = 'theta_dot';
-Gp.OutputName{3} = 'U_dot';
+Gp.OutputName{1} = 'vF';
+Gp.OutputName{2} = 'vR';
+Gp.OutputName{3} = 'sFx';
+Gp.OutputName{3} = 'sRx';
 
 % Bode plot
 opts = bodeoptions('cstprefs');
 opts.FreqUnits = 'Hz';
 opts.PhaseVisible = 'off';
+
+figure(1)
 opts.Xlim = [1e-1 1e2];
-% opts.Ylim = [-50 10];
-bode(Gp,opts)
+bode(Gp(1:2,1:2),opts,'k')
+
+figure(2)
+opts.Xlim = [1e-1 1e5];
+opts.Ylim = [-250 -60];
+bode(Gp(3:4,3:4),opts,'k')
 
 

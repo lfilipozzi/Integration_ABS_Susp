@@ -84,10 +84,10 @@ classdef MPC < matlab.System & ...
             sx_norm  = 0.1;
             tau_norm = 1000;
             Fc_norm  = 1000;
-            qt_norm  = 0.01;
+            puns_norm  = 30;
             
             % Weight on states
-            qqt = 50;       % Weight on qt
+            qpuns = 50;       % Weight on qt
             % Weights for torque control
             q1_TC = 0;      % Tracking of slip
             q2_TC = 1000;   % Tracking of torque
@@ -114,12 +114,12 @@ classdef MPC < matlab.System & ...
             % u(4) is the requested torque tau_ref
             
             % For torque control (ABS disengaged)
-            stagecost_TC = @(x,u) (x(4)'*qqt/qt_norm^2*x(4) + ...
+            stagecost_TC = @(x,u) (x(2)'*qpuns/puns_norm^2*x(2) + ...
                 (x(5)-obj.sx_ref)'*Q_TC*(x(5)-obj.sx_ref) + ...
                 (u(2) - u(4))'*R1_TC*(u(2) - u(4)) + u(1:2)'*R2_TC*u(1:2));
             termcost_TC = @(x) (x'*P_TC*x)/2;
             % For slip control (ABS engaged)
-            stagecost_SC = @(x,u) (x(4)'*qqt/qt_norm^2*x(4) + ...
+            stagecost_SC = @(x,u) (x(2)'*qpuns/puns_norm^2*x(2) + ...
                 (x(5)-obj.sx_ref)'*Q_SC*(x(5)-obj.sx_ref) + ...
                 (u(2) - u(4))'*R1_SC*(u(2) - u(4)) + u(1:2)'*R2_SC*u(1:2));
             termcost_SC = @(x) (x'*P_SC*x)/2;
