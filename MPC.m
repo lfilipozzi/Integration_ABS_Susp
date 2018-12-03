@@ -35,16 +35,14 @@ classdef MPC < matlab.System & ...
         xprev
         % Control input at the last timestep
         uprev
+        % Road preview
+        roadprev
     end
 
     % Pre-computed constants
     properties(Access = private)
-        solver_TC_vNeg  % Solver use for torque control with:       v <  v-
-        solver_TC_vNeu  % Solver use for torque control with: v- <= v <= v+
-        solver_TC_vPos  % Solver use for torque control with: v+ <  v-
-        solver_SC_vNeg  % Solver use for torque control with:       v < v-
-        solver_SC_vNeu  % Solver use for torque control with: v- <= v <= v+
-        solver_SC_vPos  % Solver use for torque control with: v+ <  v
+        solver_TC  % Solver use for torque control
+        solver_SC  % Solver use for slip control
     end
 
     methods(Access = protected)
@@ -56,20 +54,6 @@ classdef MPC < matlab.System & ...
             % built: 3 for torque control (when the slip is low) to deal
             % with the different constraints and 3 for slip control (ABS
             % engaged):
-            
-            % Unpack parameters:
-%             a1 = obj.param.a1;
-%             a2 = obj.param.a2;
-%             a3 = obj.param.a3;
-%             a4 = obj.param.a4;
-%             a5 = obj.param.a5;
-%             b1 = obj.param.b1;
-%             b2 = obj.param.b2;
-%             b3 = obj.param.b3;
-%             b4 = obj.param.b4;
-%             b5 = obj.param.b5;
-%             msp = obj.param.msp;
-%             mus = obj.param.mus;
             
             % +---------------------------+
             % |    Linearization point    |
@@ -102,30 +86,8 @@ classdef MPC < matlab.System & ...
             q1_SC = 1000;   % Tracking of slip
             q2_SC = 0;      % Tracking of torque
             % Weight on actuator
-            qFc  = 0.01;    % Weight on Fc
-            qtau = 1;       % Weight on tau
-            
-            Q_TC  = diag([...
-                qpsp/psp_norm^2,...   % Penalty on rate of change of sprung mass momentum
-                0,...   % Penalty on rate of change of unsprung mass momentum
-                0,...   % Penalty on rate of change of suspension displacement
-                0,...   % Penalty on rate of change of tire displacmeent
-                0,...   % Penalty on rate of change of slip ratio
-                q1_TC/sx_norm^2, ...    % Penalty on slip tracking error
-                q2_TC/tau_norm^2]);     % Penalty on torque target error
-            R_TC  = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
-            P_TC  = diag([0 0 0 0 0 0 0]);
-            
-            Q_SC  = diag([...
-                0,...   % Penalty on rate of change of sprung mass momentum
-                qpuns/puns_norm^2,...   % Penalty on rate of change of unsprung mass momentum
-                0,...   % Penalty on rate of change of suspension displacement
-                0,...   % Penalty on rate of change of tire displacmeent
-                0,...   % Penalty on rate of change of slip ratio
-                q1_SC/sx_norm^2, ...    % Penalty on slip tracking error
-                q2_SC/tau_norm^2]);     % Penalty on torque target error
-            R_SC  = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
-            P_SC  = diag([0 0 0 0 0 0 0]);
+            qFc  = 1;   % Weight on rate of change of Fc
+            qtau = 100;     % Weight on rate of change of tau
             
             % x(1) is the sprung mass momentum
             % x(2) is the unpsrung mass momentum
@@ -133,6 +95,32 @@ classdef MPC < matlab.System & ...
             % x(6) is the slip target error
             % x(7) is the torque target error
             % u(2) is the brake torque
+            
+            Q_TC  = diag([...
+                0,...   % Penalty on rate of change of sprung mass momentum
+                0,...   % Penalty on rate of change of unsprung mass momentum
+                0,...   % Penalty on rate of change of suspension displacement
+                0,...   % Penalty on rate of change of tire displacmeent
+                0,...   % Penalty on rate of change of slip ratio
+                q1_TC/sx_norm^2,...     % Penalty on slip tracking error
+                q2_TC/tau_norm^2,...    % Penalty on torque target error
+                qpsp/psp_norm^2,...     % Penalty on sprung mass momentum
+                0]);                    % Penalty on unsprung mass momentum
+            R_TC  = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
+            P_TC  = zeros(obj.Nx + obj.Nr);
+            
+            Q_SC  = diag([...
+                0,...   % Penalty on rate of change of sprung mass momentum
+                0,...   % Penalty on rate of change of unsprung mass momentum
+                0,...   % Penalty on rate of change of suspension displacement
+                0,...   % Penalty on rate of change of tire displacmeent
+                0,...   % Penalty on rate of change of slip ratio
+                q1_SC/sx_norm^2,...     % Penalty on slip tracking error
+                q2_SC/tau_norm^2,...    % Penalty on torque target error
+                0,...                   % Penalty on the sprung mass momentum
+                qpuns/puns_norm^2]);    % Penalty on the unsprung mass momentum
+            R_SC  = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
+            P_SC  = zeros(obj.Nx + obj.Nr);
             
             % For torque control (ABS disengaged)
             stagecost_TC = @(x,u) (...
@@ -146,90 +134,29 @@ classdef MPC < matlab.System & ...
             termcost_SC = @(x) (x'*P_SC*x)/2;
             
             % +---------------------------+
-            % |     Define constraints    |
-            % +---------------------------+
-            % Define constraints depending on the suspension relative
-            % velocity
-            % u(1) is the suspension active force Fc and
-            % (x(1)/msp-x(2)/mus) is the suspension relative velocity
-%             constraint_vNeg = @(x,u) ...
-%                 [-u(1) + (b1 * (x(1)/msp-x(2)/mus) + a1);
-%                   u(1) - (b4 * (x(1)/msp-x(2)/mus) + a4);
-%                  -u(1) + (b5 * (x(1)/msp-x(2)/mus) + a5)];
-%             constraint_vNeu = @(x,u) ...
-%                 [ u(1) - (b1 * (x(1)/msp-x(2)/mus) + a1)
-%                  -u(1) + (b1 * (x(1)/msp-x(2)/mus) + a1)];
-%             constraint_vPos = @(x,u) ...
-%                 [ u(1) - (b1 * (x(1)/msp-x(2)/mus) + a1);
-%                   u(1) - (b2 * (x(1)/msp-x(2)/mus) + a2);
-%                  -u(1) + (b3 * (x(1)/msp-x(2)/mus) + a3);];
-            
-            % +---------------------------+
             % |       Build solvers       |
             % +---------------------------+
             % Build the solvers
-            obj.solver_TC_vNeg = obj.buildMPCSolver(ss_condition_TC, stagecost_TC, termcost_TC);
-            obj.solver_TC_vNeu = obj.buildMPCSolver(ss_condition_TC, stagecost_TC, termcost_TC);
-            obj.solver_TC_vPos = obj.buildMPCSolver(ss_condition_TC, stagecost_TC, termcost_TC);
-            obj.solver_SC_vNeg = obj.buildMPCSolver(ss_condition_SC, stagecost_SC, termcost_SC);
-            obj.solver_SC_vNeu = obj.buildMPCSolver(ss_condition_SC, stagecost_SC, termcost_SC);
-            obj.solver_SC_vPos = obj.buildMPCSolver(ss_condition_SC, stagecost_SC, termcost_SC);
+            obj.solver_TC = obj.buildMPCSolver(ss_condition_TC, stagecost_TC, termcost_TC);
+            obj.solver_SC = obj.buildMPCSolver(ss_condition_SC, stagecost_SC, termcost_SC);
         end
 
-        function [u, solveTime, solverUsed] = stepImpl(obj, tau_ref, ...
+        function [u, solveTime, cost] = stepImpl(obj, tau_ref, ...
                 road_prev, x, ABS_flag)
             % Implement algorithm. 
             
+            % Setup chronometer
             tic;
             time0 = toc;
             
-            % Compute the extended state for integral formulation
-            xaug = [x-obj.xprev;
-                x(5)-obj.sx_ref;
-                obj.uprev(2)-tau_ref];
-            
-            % Save the value of the current state for the next timestep
-            obj.xprev = x;
-            
-            % Compute suspension relative velocity
-            pspr = x(1);
-            puns = x(2);
-            vrel = pspr/obj.param.msp - puns/obj.param.mus;
-            vm = (obj.param.a1-obj.param.a4) / (obj.param.b4-obj.param.b1);
-            vp = (obj.param.a1-obj.param.a3) / (obj.param.b3-obj.param.b1);
-            
             if ABS_flag == 1    % ABS is not engaged (torque control)
-                if vrel < vm
-                    du = solveMPC(obj, obj.solver_TC_vNeg, road_prev, xaug);
-                    solverUsed = 1;
-                elseif vrel <= vp
-                    du = solveMPC(obj, obj.solver_TC_vNeu, road_prev, xaug);
-                    solverUsed = 2;
-                else
-                    du = solveMPC(obj, obj.solver_TC_vPos, road_prev, xaug);
-                    solverUsed = 3;
-                end
-            else                % ABS is engaged slip control)
-                if vrel < vm
-                    du = solveMPC(obj, obj.solver_SC_vNeg, road_prev, xaug);
-                    solverUsed = 4;
-                elseif vrel <= vp
-                    du = solveMPC(obj, obj.solver_SC_vNeu, road_prev, xaug);
-                    solverUsed = 5;
-                else
-                    du = solveMPC(obj, obj.solver_SC_vPos, road_prev, xaug);
-                    solverUsed = 6;
-                end
+                [u, cost] = solveMPC(obj, obj.solver_TC, road_prev, x, tau_ref);
+            else                % ABS is engaged (slip control)
+                [u, cost] = solveMPC(obj, obj.solver_SC, road_prev, x, tau_ref);
             end
             
-            % Compute the new control input
-            u = obj.uprev + du;
-            
-            % Save the new contorl input for the next timestep
-            obj.uprev = u;
-            
+            % Record time
             time1 = toc;
-            
             solveTime = time1 - time0;
             
         end
@@ -238,6 +165,7 @@ classdef MPC < matlab.System & ...
             % Initialize / reset discrete-state properties
             obj.xprev = zeros(obj.Nx,1);
             obj.uprev = zeros(obj.Nu,1);
+            obj.roadprev = zeros(1, obj.Nt);
         end
         
         %% Build MPC solver
@@ -269,9 +197,13 @@ classdef MPC < matlab.System & ...
             % Define the linearized model (x_dot = A*x+Bu) with integral
             % formulation
             C = [0 0 0 0 1;
-                 0 0 0 0 0];
+                 0 0 0 0 0;
+                 1 0 0 0 0;
+                 0 1 0 0 0];
             D = [0 0 0;
-                 0 1 0];
+                 0 1 0;
+                 0 0 0;
+                 0 0 0];
             A = [linmodel.A zeros(obj.Nx, obj.Nr);
                  C          eye(obj.Nr)];
             B = [linmodel.B; D];
@@ -295,7 +227,6 @@ classdef MPC < matlab.System & ...
 
             ub = struct();
             ub.u = inf(obj.Nu, obj.Nt);
-            ub.u(2) = 0;    % Braking torque is always negative
             ub.x = inf(obj.Nx + obj.Nr, obj.Nt+1);
             
             % +---------------------------+
@@ -311,16 +242,33 @@ classdef MPC < matlab.System & ...
         end
         
         %% Solve MPC problem
-        function u = solveMPC(obj, solver, road_prev, x)
+        function [u, cost] = solveMPC(obj, solver, road_prev, x, tau_ref)
             % Solve the MPC Problem for a given solver
             
+            % Compute the extended state for integral formulation
+            xaug = [x-obj.xprev;        % State difference
+                x(5)-obj.sx_ref;        % Slip target error
+                obj.uprev(2)-tau_ref;   % Torque target error
+                x(1);                   % Sprung mass momentum
+                x(2)];                  % Unsprung mass momentum
+            
+            % Save the value of the current state for the next timestep
+            obj.xprev = x;
+            
             % Set initial state to current state
-            solver.fixvar('x', 1, x);
+            solver.fixvar('x', 1, xaug);
+            
+            % Set bounds on actuators
+            [umin, umax] = getActuatorBounds(obj, x);
+            solver.lb.u = umin * ones(1, obj.Nt);
+            solver.ub.u = umax * ones(1, obj.Nt);
             
             % Feed the road preview information to the MPC
             for k = 1:obj.Nt
-                solver.fixvar('u', k, road_prev(:,k), 3)
+                solver.fixvar('u', k, road_prev(:,k) - obj.roadprev(:,k), 3)
             end
+            % Save road preview for next timestep
+            obj.roadprev = road_prev;
             
             % Solve the MPC problem
             solver.solve();
@@ -331,10 +279,74 @@ classdef MPC < matlab.System & ...
             end
 
             % Return the first control input
-            u = solver.var.u(:,1);
+            du = solver.var.u(:,1);
+            
+            % Compute the new control input
+            u = obj.uprev + du;
+            
+            % Save the new control input for the next timestep
+            obj.uprev = u;
+            
+            % Save the cost
+            cost = solver.obj;
         end
         
-        %% Specify sample time
+        %% Define actuator bounds
+        function [umin, umax] = getActuatorBounds(obj, state)
+            
+            umax = inf(obj.Nu, 1);
+            umin = -umax;
+            
+            % Unpack parameters:
+            a1 = obj.param.a1;
+            a2 = obj.param.a2;
+            a3 = obj.param.a3;
+            a4 = obj.param.a4;
+            a5 = obj.param.a5;
+            b1 = obj.param.b1;
+            b2 = obj.param.b2;
+            b3 = obj.param.b3;
+            b4 = obj.param.b4;
+            b5 = obj.param.b5;
+            msp = obj.param.msp;
+            mus = obj.param.mus;
+            
+            % +-----------------------+
+            % |   Suspension bounds   |
+            % +-----------------------+
+            % Define bounds depending on the suspension relative velocity
+            pspr = state(1);
+            puns = state(2);
+            vrel = -(pspr/msp - puns/mus);
+            vm = (a1-a4) / (b4-b1);
+            vp = (a1-a3) / (b3-b1);
+            if vrel < vm
+                umin(1) = max(b1 * vrel + a1, b5 * vrel + a5);
+                umax(1) = (b4 * vrel + a4);
+            elseif vrel <= vp
+                umin(1) = (b1 * vrel + a1);
+                umax(1) = (b1 * vrel + a1);
+            else
+                umin(1) = (b3 * vrel + a3);
+                umax(1) = min(b1 * vrel + a1, b2 * vrel + a2);
+            end
+            
+            % +-----------------------+
+            % |     Brake  bounds     |
+            % +-----------------------+
+            % Braking torque must always be negative
+            umax(2) = 0;
+            
+            % +-----------------------+
+            % | Integral formulation  |
+            % +-----------------------+
+            % Translate the bounds to convert the constraint on u into a
+            % constraint on du = u(k) - u(k-1)
+            umin = umin - obj.uprev;
+            umax = umax - obj.uprev;
+        end
+        
+        %% Specify sampling time
         function sts = getSampleTimeImpl(obj)
             % Define sampling time
             sts = createSampleTime(obj,'Type','Discrete Periodic',...
