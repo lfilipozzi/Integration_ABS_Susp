@@ -63,7 +63,7 @@ classdef MPC < matlab.System & ...
             [xss, uss] = steadyState(0,obj.param);
             ss_condition_TC = struct('xss',xss,'uss',uss);
             % For slip control (ABS engaged)
-            [xss, uss] = steadyState(-0.35,obj.param);
+            [xss, uss] = steadyState(-0.25,obj.param);
             ss_condition_SC = struct('xss',xss,'uss',uss);
             
             % +---------------------------+
