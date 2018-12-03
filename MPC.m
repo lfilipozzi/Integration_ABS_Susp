@@ -107,7 +107,6 @@ classdef MPC < matlab.System & ...
                 qpsp/psp_norm^2,...     % Penalty on sprung mass momentum
                 0]);                    % Penalty on unsprung mass momentum
             R_TC  = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
-            P_TC  = zeros(obj.Nx + obj.Nr);
             
             Q_SC  = diag([...
                 0,...   % Penalty on rate of change of sprung mass momentum
@@ -120,25 +119,13 @@ classdef MPC < matlab.System & ...
                 0,...                   % Penalty on the sprung mass momentum
                 qpuns/puns_norm^2]);    % Penalty on the unsprung mass momentum
             R_SC  = diag([qtau/tau_norm^2 qFc/Fc_norm^2]);
-            P_SC  = zeros(obj.Nx + obj.Nr);
-            
-            % For torque control (ABS disengaged)
-            stagecost_TC = @(x,u) (...
-                x'*Q_TC*x + ...
-                u(1:2)'*R_TC*u(1:2));
-            termcost_TC = @(x) (x'*P_TC*x)/2;
-            % For slip control (ABS engaged)
-            stagecost_SC = @(x,u) (...
-                x'*Q_SC*x + ...
-                u(1:2)'*R_SC*u(1:2));
-            termcost_SC = @(x) (x'*P_SC*x)/2;
             
             % +---------------------------+
             % |       Build solvers       |
             % +---------------------------+
             % Build the solvers
-            obj.solver_TC = obj.buildMPCSolver(ss_condition_TC, stagecost_TC, termcost_TC);
-            obj.solver_SC = obj.buildMPCSolver(ss_condition_SC, stagecost_SC, termcost_SC);
+            obj.solver_TC = obj.buildMPCSolver(ss_condition_TC, Q_TC, R_TC);
+            obj.solver_SC = obj.buildMPCSolver(ss_condition_SC, Q_SC, R_SC);
         end
 
         function [u, solveTime, cost] = stepImpl(obj, tau_ref, ...
@@ -169,8 +156,7 @@ classdef MPC < matlab.System & ...
         end
         
         %% Build MPC solver
-        function solver = buildMPCSolver(obj, ss_condition, ...
-                stagecost, termcost)
+        function solver = buildMPCSolver(obj, ss_condition, Q, R)
             % This function is used to build the MPC solver for a given
             % cost function, a given constraint function and a given
             % linearizing point.
@@ -213,9 +199,17 @@ classdef MPC < matlab.System & ...
             % +---------------------------+
             % |   Define cost function    |
             % +---------------------------+
-            % Convert cost functions into CasADi functions
+            % Define stage cost
+            stagecost = @(x,u) (x'*Q*x + u(1:2)'*R*u(1:2));
             l  = mpc.getCasadiFunc(stagecost, [obj.Nx + obj.Nr, obj.Nu], ...
                 {'x','u'}, {'l'});
+            
+            % Define terminal cost
+            % P = zeros(obj.Nx + obj.Nr);
+            % P = dare(A,B,Q,blkdiag(R,1));
+            P = zeros(obj.Nx + obj.Nr);
+            P(1:5,1:5) = dare(A(1:5,1:5),B(1:5,1:2),Q(1:5,1:5),R);
+            termcost = @(x) (x'*P*x)/2;
             Vf = mpc.getCasadiFunc(termcost, obj.Nx + obj.Nr, {'x'}, {'Vf'});
             
             % +---------------------------+
