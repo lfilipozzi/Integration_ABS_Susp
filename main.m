@@ -53,7 +53,7 @@ brake_init = [0; 0; 0; 0; x0];
 sx_ref = -1/B*tan(pi/(2*C)); % Slip target when ABS is engaged
 sxABSon_F = 1.4*sx_ref;
 sxABSon_R = 1.4*sx_ref;
-sxABSoff  = 0.2*sx_ref;
+sxABSoff  = 0.1*sx_ref;
 
 %% Define parameters of the MPC
 param_F = struct('ks',ksF,'bs',bsF,'msp',mF,'kt',kt,'mus',mus,'rw',rw,...
@@ -65,8 +65,8 @@ param_R = struct('ks',ksR,'bs',bsR,'msp',mR,'kt',kt,'mus',mus,'rw',rw,...
     'a5',a5,'b1',b1,'b2',b2,'b3',b3,'b4',b4,'b5',b5);
 
 % Set MPC parameters
-Ts_MPC = 0.025; % MPC sampling time
-Nt_MPC = 40;    % MPC horizon
+Ts_MPC = 0.05;  % MPC sampling time
+Nt_MPC = 10;    % MPC horizon
 Nx_MPC = 5;     % Number of states of the MPC model
 Nu_MPC = 3;     % Number of inputs of MPC model
 Nr_MPC = 4;     % Number of reference signals of the MPC
@@ -128,7 +128,7 @@ control_Youla = timeseries();
 
 %% Run simulation (MPC tuning)
 % Nt_MPC = 50;
-% Ts_MPC_list = [0.0250 0.05 0.1 0.2 0.3 0.4];
+% Ts_MPC_list = [0.0250 0.05 0.1 0.15 0.2];
 % for k = 1:length(Ts_MPC_list)
 %     Ts_MPC = Ts_MPC_list(k);
 %     disp(['Run MPC model with Ts = ',num2str(Ts_MPC),...

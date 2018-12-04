@@ -89,13 +89,6 @@ classdef MPC < matlab.System & ...
             qFc  = 1;   % Weight on rate of change of Fc
             qtau = 100;     % Weight on rate of change of tau
             
-            % x(1) is the sprung mass momentum
-            % x(2) is the unpsrung mass momentum
-            % x(5) is the longitudinal slip sx
-            % x(6) is the slip target error
-            % x(7) is the torque target error
-            % u(2) is the brake torque
-            
             Q_TC  = diag([...
                 0,...   % Penalty on rate of change of sprung mass momentum
                 0,...   % Penalty on rate of change of unsprung mass momentum
@@ -370,9 +363,6 @@ classdef MPC < matlab.System & ...
             out1 = [obj.Nu 1];
             out2 = [1 1];
             out3 = [1 1];
-
-            % Example: inherit size from first input port
-            % out = propagatedInputSize(obj,1);
         end
         
         function [out1, out2, out3] = getOutputDataTypeImpl(~)
