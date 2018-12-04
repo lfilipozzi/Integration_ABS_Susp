@@ -1,6 +1,7 @@
 # Folder to ignore
 Constraints/
 OtherFiles/
+ResultsTuningMPC/
 
 # Ignore files with following extension:
 *.slx.autosave
