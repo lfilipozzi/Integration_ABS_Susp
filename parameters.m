@@ -77,7 +77,7 @@ a5 = -1800;
 
 %% Road parameters
 % Deterministic road parameters
-z0_road = 0.02;                 % Amplitude of the road profile (m)
+z0_road = 0.03;                 % Amplitude of the road profile (m)
 lambda_road = 50/3.6;           % Wavelength of the road profile (m)
 w_road = 2*2*pi/lambda_road;    % Frequency of the road profile
 d_bump = 5;                     % Distance of the bump to the start (m)
@@ -86,7 +86,7 @@ d_bump = 5;                     % Distance of the bump to the start (m)
 G = 1.7e-5;         % Roughness parameter
 p = 1.55;           % Waviness
 N = 500;            % Number of frequencies
-Lmin = 1/15;        % Smallest wavelength considered
+Lmin = 2;%1/15;        % Smallest wavelength considered
 Lmax = 60;          % Biggest wavelength considered
 nmin = 2*pi/Lmax;   % Smallest wavenumber
 nmax = 2*pi/Lmin;   % Biggest wavenumber

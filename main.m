@@ -13,7 +13,7 @@ parameters
 
 %% Define sinusoidal road profile
 % Choose road profile. Possible values: '
-roadProfile_name = 'sinusoidal';
+roadProfile_name = 'random';%'sinusoidal';
 roadProfile_index = getRoadIndex(roadProfile_name);
 
 % Plot road profile
@@ -126,6 +126,9 @@ control_MPC   = timeseries();
 vehicle_Youla = timeseries();
 control_Youla = timeseries();
 
+U_cutoff = 10/3.6;  % Stop simulation when the vehicle 
+                    % speed is below this value
+
 %% Run simulation (MPC tuning)
 % Nt_MPC = 50;
 % Ts_MPC_list = [0.0250 0.05 0.1 0.15 0.2];
@@ -158,11 +161,11 @@ sim('model_base.slx')
 plotFigure
 
 %% Plot animation
-% fps = 6;
-% frame = drawHalfCar(vehicle_MPC,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
-%     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
-%     roadProfile_index);
-% % movie(frame,1,fps)
+fps = 6;
+frame = drawHalfCar(vehicle_MPC,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
+    lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
+    roadProfile_index);
+% movie(frame,1,fps)
 % 
 % frame = drawHalfCar(vehicle_Youla,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
 %     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
