@@ -50,10 +50,9 @@ classdef MPC < matlab.System & ...
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
             
-            % Build the different solvers of the MPC. Six solvers are
-            % built: 3 for torque control (when the slip is low) to deal
-            % with the different constraints and 3 for slip control (ABS
-            % engaged):
+            % Build the different solvers of the MPC. Two solvers are
+            % built: one for torque control (when the slip is low) and one
+            % for slip control (ABS engaged):
             
             % +---------------------------+
             % |    Linearization point    |

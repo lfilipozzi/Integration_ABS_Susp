@@ -96,3 +96,17 @@ S = G * n_road.^(-p);    % PSD
 P = 2 * S.*(n_road>=0);  % One side PSD
 A_road = sqrt(2*P*Dn);   % Amplitude
 Phase_road = 2*pi*rand(size(A_road));  % Phase
+
+% Random road with low frequencies only (for min-max MPC)
+Lcutoff = 10;      % Smallest wavelength considered by min-max MPC
+ncutoff = 2*pi/Lcutoff; % Corresponding wavenumver
+n_road_lowfreq = n_road(find(n_road <= ncutoff));
+A_road_lowfreq = A_road(find(n_road <= ncutoff));
+Phase_road_lowfreq = Phase_road(find(n_road <= ncutoff));
+
+
+
+
+
+
+

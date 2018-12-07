@@ -77,10 +77,10 @@ if not(prod(size(wmin) == [Nw, 1]))
 end
 
 % Check min <= max
-if sum(umin >= umax)
+if sum(umin > umax)
     error('Unfeasible bounds on u')
 end
-if sum(wmin >= wmax)
+if sum(wmin > wmax)
     error('Unfeasible bounds on w')
 end
 
@@ -152,10 +152,17 @@ for j = 1:Nt-1
     Suv(j*Nu+1:end,(j-1)*Nu+1:j*Nu) = Suv(Nu+1:(Nt-j+1)*Nu,1:Nu);
 end
 
-Suw = zeros(Nt*Nu);
-Suw(Nu+1:end,1:Nu) = Sux(1:(Nt-1)*Nu,:) * Bd;
+% Possible error here:
+% Suw = zeros(Nt*Nu);
+% Suw(Nu+1:end,1:Nu) = Sux(1:(Nt-1)*Nu,:) * Bd;
+% for j = 1:Nt-1
+%     Suw(j*Nu+1:end,(j-1)*Nu+1:j*Nu) = Suw(Nu+1:(Nt-j+1)*Nu,1:Nu);
+% end
+% Use the floowing code instead
+Suw = zeros(Nt*Nu,Nt*Nw);
+Suw(Nu+1:end,1:Nw) = Sux(1:(Nt-1)*Nu,:) * Bd;
 for j = 1:Nt-1
-    Suw(j*Nu+1:end,(j-1)*Nu+1:j*Nu) = Suw(Nu+1:(Nt-j+1)*Nu,1:Nu);
+    Suw(j*Nu+1:end,(j-1)*Nw+1:j*Nw) = Suw(Nu+1:(Nt-j+1)*Nu,1:Nw);
 end
 
 % Write cost function over the prediction horizon:
@@ -291,7 +298,7 @@ Sc = G/HvtHv*HvtHx - F;
 Gm = 2 * w_vertices' * HwtHv;
 gm = -ones(2^(Nw*Nt),1);
 Wm = zeros(2^(Nw*Nt),1);
-for k = 1:2^(Nu*Nt)
+for k = 1:2^(Nw*Nt)
     Wm(k) = -w_vertices(:,k)' * HwtHw * w_vertices(:,k);
 end
 Sm = 2 * w_vertices' * (HwtHx - HwtHv / HvtHv * HvtHx);

@@ -16,7 +16,7 @@ parameters
 roadProfile_name = 'random';%'sinusoidal';
 roadProfile_index = getRoadIndex(roadProfile_name);
 
-% Plot road profile
+% Compute first 100m of road profile
 x_road = linspace(0,100,1000);
 z_road = zeros(size(x_road));
 DzDx_road = zeros(size(x_road));
@@ -24,6 +24,16 @@ for i = 1:length(x_road)
     [DzDx_road(i),z_road(i)] = ...
         roadProfile(x_road(i),z0_road,lambda_road,w_road,d_bump,...
         A_road,Phase_road,n_road,roadProfile_index);
+end
+
+% Compute first 100m of road profile used by min-max MPC (for random road
+% only)
+z_road_lowfreq = zeros(size(x_road));
+DzDx_road_lowfreq = zeros(size(x_road));
+for i = 1:length(x_road)
+    [DzDx_road_lowfreq(i),z_road_lowfreq(i)] = ...
+        roadProfile(x_road(i),z0_road,lambda_road,w_road,d_bump,...
+        A_road_lowfreq,Phase_road_lowfreq,n_road_lowfreq,roadProfile_index);
 end
 
 %% Define initial state
@@ -70,7 +80,11 @@ Nt_MPC = 10;    % MPC horizon
 Nx_MPC = 5;     % Number of states of the MPC model
 Nu_MPC = 3;     % Number of inputs of MPC model
 Nr_MPC = 4;     % Number of reference signals of the MPC
+Nw_MPC = 1;     % Number of disturbance (for min-max MPC only!)
 
+Nt_RMPC = 5;    % MPC horizon for min-max MPC
+
+% Standard MPC
 set_param('model_MPC/MPC Front/MPC',...
     'Delta' ,'Ts_MPC',...
     'Nx'    ,'Nx_MPC',...
@@ -89,8 +103,31 @@ set_param('model_MPC/MPC Rear/MPC',...
     'sx_ref','sx_ref',...
     'param' ,'param_R')
 
+% Min-max MPC
+set_param('model_RMPC/MPC Front/MPC',...
+    'Delta' ,'Ts_MPC',...
+    'Nx'    ,'Nx_MPC',...
+    'Nu'    ,'Nu_MPC',...
+    'Nr'    ,'Nr_MPC',...
+    'Nt'    ,'Nt_RMPC',...
+    'Nw'    ,'Nw_MPC',...
+    'sx_ref','sx_ref',...
+    'param' ,'param_F')
+
+set_param('model_RMPC/MPC Rear/MPC',...
+    'Delta' ,'Ts_MPC',...
+    'Nx'    ,'Nx_MPC',...
+    'Nu'    ,'Nu_MPC',...
+    'Nr'    ,'Nr_MPC',...
+    'Nt'    ,'Nt_RMPC',...
+    'Nw'    ,'Nw_MPC',...
+    'sx_ref','sx_ref',...
+    'param' ,'param_R')
+
 % Need to use MATLAB System for road preview since MATLAB thinks the size
 % of the matrix is changing over time but this is wrong
+
+% Standard MPC simulation
 param_road = struct();
 param_road.a = a;
 param_road.b = b;
@@ -107,6 +144,24 @@ set_param('model_MPC/Vehicle/Road preview',...
     'Nt_MPC','Nt_MPC',...
     'Ts_MPC','Ts_MPC',...
     'param' ,'param_road')
+
+% Min-max MPC simulation
+param_road_lowfreq = struct();
+param_road_lowfreq.a = a;
+param_road_lowfreq.b = b;
+param_road_lowfreq.z0_road = z0_road;
+param_road_lowfreq.w_road = w_road;
+param_road_lowfreq.lambda_road = lambda_road;
+param_road_lowfreq.d_bump = d_bump;
+param_road_lowfreq.A_road = A_road_lowfreq;
+param_road_lowfreq.Phase_road = Phase_road_lowfreq;
+param_road_lowfreq.n_road = n_road_lowfreq;
+param_road_lowfreq.roadProfile_index = roadProfile_index;
+
+set_param('model_RMPC/Vehicle/Road preview',...
+    'Nt_MPC','Nt_RMPC',...
+    'Ts_MPC','Ts_MPC',...
+    'param' ,'param_road_lowfreq')
 
 %% Load Youla controller for the base model
 Gc = load('ControllerBaseModel/YoulaSlipControl.mat','GcF','GcR');
@@ -157,20 +212,23 @@ sim('model_MPC.slx')
 % Simulation with Youla
 sim('model_base.slx')
 
+% Simulation with min-max MPC and incomplete road preview
+sim('model_RMPC.slx')
+
 % Plot results
 plotFigure
 
 %% Plot animation
-fps = 6;
-frame = drawHalfCar(vehicle_MPC,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
-    lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
-    roadProfile_index);
-% movie(frame,1,fps)
+% fps = 6;
+% frame = drawHalfCar(vehicle_MPC,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
+%     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
+%     roadProfile_index);
+% % movie(frame,1,fps)
 % 
 % frame = drawHalfCar(vehicle_Youla,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
 %     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
 %     roadProfile_index);
-% movie(frame,1,fps)
+% % movie(frame,1,fps)
 
 
 
