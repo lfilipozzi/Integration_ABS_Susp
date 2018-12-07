@@ -106,9 +106,7 @@ end
 % hold on
 % box on
 % % Define xlim of the plot
-% vmax = max([.6;bandwidth = 10; % desired bandwidth in Hz
-zeta = 1/sqrt(2);
-w0 = 2*pi*bandwidth / sqrt(sqrt(4*zeta^4+1) - 2*zeta^2);
+% vmax = max([.6;
 %     abs(vehicle_Youla.qsF_dot.Data);
 %     abs(vehicle_Youla.qsR_dot.Data)]);
 % vmin = -vmax;
@@ -165,9 +163,7 @@ subplot(1,2,2)
 hold on
 box on
 plot(vehicle_MPC.sRx)
-plot(vehicle_Youla.sRx)bandwidth = 10; % desired bandwidth in Hz
-zeta = 1/sqrt(2);
-w0 = 2*pi*bandwidth / sqrt(sqrt(4*zeta^4+1) - 2*zeta^2);
+plot(vehicle_Youla.sRx)
 
 xlim([0 time_max])
 ylim([sx_min sx_max])
