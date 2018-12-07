@@ -3,6 +3,7 @@ Constraints/
 OtherFiles/
 ResultsTuningMPC/
 Results/
+ResultsRMPC/
 
 # Ignore files with following extension:
 *.slx.autosave

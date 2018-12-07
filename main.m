@@ -13,7 +13,7 @@ parameters
 
 %% Define sinusoidal road profile
 % Choose road profile. Possible values: '
-roadProfile_name = 'random';%'sinusoidal';
+roadProfile_name = 'random';
 roadProfile_index = getRoadIndex(roadProfile_name);
 
 % Compute first 100m of road profile
@@ -216,7 +216,9 @@ sim('model_base.slx')
 sim('model_RMPC.slx')
 
 % Plot results
-plotFigure
+% plotFigure_withYoula  % Only MPC + Youla
+plotFigure_withRMPC     % Only MPC + RMPC
+plotFigure              % MPC + RMPC + Youla
 
 %% Plot animation
 % fps = 6;

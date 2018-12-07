@@ -170,10 +170,10 @@ classdef RMPC < matlab.System & ...
             % |     Quadprog options      |
             % +---------------------------+
             obj.quadprog_options = optimoptions('quadprog');
-            obj.quadprog_options.StepTolerance = 1e-15; % Default 1e-12
-            obj.quadprog_options.MaxIterations = 500;   % Default 200
+            obj.quadprog_options.StepTolerance = 1e-18; % Default 1e-12
+            obj.quadprog_options.MaxIterations = 1000;   % Default 200
             % obj.quadprog_options.Display = 'none';
-            obj.quadprog_options.OptimalityTolerance = 1e-12;   % Default 1e-8
+            obj.quadprog_options.OptimalityTolerance = 1e-15;   % Default 1e-8
         end
 
         function [u, solveTime] = stepImpl(obj, tau_ref, ...
@@ -552,8 +552,8 @@ classdef RMPC < matlab.System & ...
             [umin, umax] = getActuatorBounds(obj, x);
             
             % Set bound on disturbance
-            wmin = -0.01;%-0.04*U;
-            wmax = 0.01;%0.04*U;
+            wmin = -0.03*U;%-0.01;
+            wmax = 0.03*U;%0.01;
             
             % Feed the road preview information to the MPC
             u3_prev = road_prev - obj.roadprev;
