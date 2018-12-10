@@ -457,8 +457,8 @@ classdef RMPC < matlab.System & ...
             % Constraints can be written as:
             %       F x0 + Gv <= d
             % with:
-            %       d = m + max_{w} M*w
-            d = m + max(M*w_vertices,[],2);
+            %       d = m + min_{w} M*w
+            d = m + min(M*w_vertices,[],2);
 
             % TODO: for now only bounds on u are considered, need to add bounds on x
             % and polytopic constraints ax x +au u <= b

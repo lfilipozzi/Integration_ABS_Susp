@@ -4,6 +4,7 @@ OtherFiles/
 ResultsTuningMPC/
 Results/
 ResultsRMPC/
+Video/
 
 # Ignore files with following extension:
 *.slx.autosave

@@ -2,11 +2,11 @@ clear; clc;
 close all;
 
 % Add path to CasADi and MPCTools folder
-addpath('/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi/',...
-    '/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
+% addpath('/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi/',...
+%     '/Echange/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
 
-% addpath('D:/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi_win/',...
-%     'D:/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
+addpath('D:/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/casadi_win/',...
+    'D:/Ecole/17 - UC Davis/MAE298-Optimization Based Control/MPCTools/mpctools/')
 
 %% Define vehicle and road parameters
 parameters
@@ -216,22 +216,33 @@ sim('model_base.slx')
 sim('model_RMPC.slx')
 
 % Plot results
-% plotFigure_withYoula  % Only MPC + Youla
-plotFigure_withRMPC     % Only MPC + RMPC
-plotFigure              % MPC + RMPC + Youla
+plotFigure
 
 %% Plot animation
-% fps = 6;
-% frame = drawHalfCar(vehicle_MPC,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
-%     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
-%     roadProfile_index);
-% % movie(frame,1,fps)
-% 
-% frame = drawHalfCar(vehicle_Youla,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
-%     lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
-%     roadProfile_index);
-% % movie(frame,1,fps)
+fps = 30;
 
+% MPC Video
+frame = drawHalfCar(vehicle_MPC,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
+    lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
+    roadProfile_index);
+createVideoHalfCar(frame,'video_MPC.avi',fps)
+
+% Show video
+figure 
+imshow(frame(1).cdata, 'Border', 'tight')
+movie(frame,1,fps)
+
+% RMPC
+frame = drawHalfCar(vehicle_RMPC,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
+    lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
+    roadProfile_index);
+createVideoHalfCar(frame,'video_RMPC.avi',fps)
+
+% Youla
+frame = drawHalfCar(vehicle_Youla,fps,a,b,rw/3,(a+b)/5,h_susp,rw,z0_road,...
+    lambda_road,w_road,d_bump,mF,mR,mus,g,kt,A_road,Phase_road,n_road,...
+    roadProfile_index);
+createVideoHalfCar(frame,'video_Youla.avi',fps)
 
 
 

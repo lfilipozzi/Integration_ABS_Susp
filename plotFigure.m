@@ -5,7 +5,8 @@ close all;
 % plotName = 'sinusoidal';    % Name of the plots
 folder = 'ResultsRMPC';
 plotName = 'random';        % Name of the plots
-publishFigure = true;      % Switch to save figure as pdf file
+fileformat = 'pdf';
+publishFigure = false;      % Switch to save figure
 
 %% Change graphics parameters
 FontSize = 7;
@@ -19,21 +20,22 @@ set(groot,'defaultAxesFontSize',FontSize)
 set(groot,'defaultFigureColor',[1 1 1])
 
 %% Show road profile
-% figure(1)
-% clf
-% subplot(2,1,1)
-% plot(x_road,z_road)
-% ylabel('$z_{road}$ (m)')
+figure(1)
+clf
+subplot(2,1,1)
+plot(x_road,z_road)
+ylabel('$z_{road}$ (m)')
+xlabel('$x_{road}$ (m)')
 % subplot(2,1,2)
 % plot(x_road,DzDx_road)
 % ylabel('$dz/dx_{road}$ (m/s)')
 % xlabel('$x_{road}$ (m)')
-% 
-% set(gcf,'pos',[20 25 12 8])
-% 
+
+set(gcf,'pos',[20 25 12 8])
+
 % if publishFigure
-%     pause(1)
-%     export_fig([folder,'/',plotName,'_road.pdf'])
+    pause(1)
+    export_fig([folder,'/',plotName,'_road.',fileformat])
 % end
 
 %% Vehicle speed
@@ -59,7 +61,7 @@ set(gcf,'pos',[10 5 6 6])
 
 if publishFigure
     pause(1)
-    export_fig([folder,'/',plotName,'_velocity.pdf'])
+    export_fig([folder,'/',plotName,'_velocity.',fileformat])
 end
 
 %% Show constraints on SAS (MPC)
@@ -89,18 +91,19 @@ SAS_bounds_R = plot(qsR_dot_resampled.Data, control_MPC.FcR.Data, '.');
 
 xlim([vmin vmax])
 
-xlabel('Suspension relative velocity $v = v_{sprung} - v_{unsprung}$ (m/s)')
+xlabel({'Suspension relative velocity',...
+    '$v = v_{sprung} - v_{unsprung}$ (m/s)'})
 ylabel('Suspension force $F_c$ (N)')
 myLeg = legend([SAS_bounds_F SAS_bounds_R],'Front','Rear');
 
 set(myLeg,'location','northwest')
 set(gca,'Layer','top')
 
-set(gcf,'pos',[2 5 8 6])
+set(gcf,'pos',[2 5 7 6])
 
 if publishFigure
     pause(1)
-    export_fig([folder,'/',plotName,'_SASConstraint_MPC.pdf'])
+    export_fig([folder,'/',plotName,'_SASConstraint_MPC.',fileformat])
 end
 
 %% Show constraints on SAS (min-max MPC)
@@ -130,18 +133,19 @@ SAS_bounds_R = plot(qsR_dot_resampled.Data, control_RMPC.FcR.Data, '.');
 
 xlim([vmin vmax])
 
-xlabel('Suspension relative velocity $v = v_{sprung} - v_{unsprung}$ (m/s)')
+xlabel({'Suspension relative velocity',...
+    '$v = v_{sprung} - v_{unsprung}$ (m/s)'})
 ylabel('Suspension force $F_c$ (N)')
 myLeg = legend([SAS_bounds_F SAS_bounds_R],'Front','Rear');
 
 set(myLeg,'location','northwest')
 set(gca,'Layer','top')
 
-set(gcf,'pos',[2 5 8 6])
+set(gcf,'pos',[2 5 7 6])
 
 if publishFigure
     pause(1)
-    export_fig([folder,'/',plotName,'_SASConstraint_minmaxMPC.pdf'])
+    export_fig([folder,'/',plotName,'_SASConstraint_minmaxMPC.',fileformat])
 end
 
 %% Show constraints on SAS (Youla)
@@ -230,7 +234,7 @@ set(gcf,'pos',[2 15 12 5])
 
 if publishFigure
     pause(1)
-    export_fig([folder,'/',plotName,'_sx.pdf'])
+    export_fig([folder,'/',plotName,'_sx.',fileformat])
 end
 
 %% Comparison vertical force MPC and Youla
@@ -291,7 +295,7 @@ set(gcf,'pos',[2 25 12 5])
 
 if publishFigure
     pause(1)
-    export_fig([folder,'/',plotName,'_fz.pdf'])
+    export_fig([folder,'/',plotName,'_fz.',fileformat])
 end
 
 %% Show road profile and low-frequencies road profile used by min-max MPC
@@ -319,7 +323,129 @@ set(gcf,'pos',[20 25 12 8])
 
 if publishFigure
     pause(1)
-    export_fig([folder,'/',plotName,'_road_withlowfreq.pdf'])
+    export_fig([folder,'/',plotName,'_road_withlowfreq.',fileformat])
+end
+
+%% Torque vs time
+figure(8)
+tau_min = min([control_MPC.tauF.Data;
+    control_RMPC.tauF.Data
+    control_Youla.tauF.Data;
+    control_MPC.tauR.Data;
+    control_RMPC.tauR.Data;
+    control_Youla.tauR.Data]);
+tau_max = 1.2*max([control_MPC.tauF.Data;
+    control_RMPC.tauF.Data
+    control_Youla.tauF.Data;
+    control_MPC.tauR.Data;
+    control_RMPC.tauR.Data;
+    control_Youla.tauR.Data]);
+time_max = max([control_MPC.tauF.Time;
+    control_RMPC.tauF.Time;
+    control_Youla.tauF.Time]);
+
+% Front
+subplot(1,2,1)
+hold on
+box on
+plot(control_Youla.tauF)
+plot(control_MPC.tauF)
+plot(control_RMPC.tauF)
+
+xlim([0 time_max])
+ylim([tau_min tau_max])
+
+xlabel('Time (s)')
+ylabel('Braking torque $\tau$ (Nm)')
+title('Front axle')
+
+set(gca,'position',[0.13 0.15 0.4 0.75])
+
+% Rear
+subplot(1,2,2)
+hold on
+box on
+plot(control_Youla.tauR)
+plot(control_MPC.tauR)
+plot(control_RMPC.tauR)
+
+xlim([0 time_max])
+ylim([tau_min tau_max])
+
+xlabel('Time (s)')
+title('Rear axle')
+hleg = legend('Linear control','MPC','min-max MPC');
+set(hleg,'location','southeast')
+
+set(gca,'YTick',[])
+set(gca,'position',[0.56 0.15 0.4 0.75])
+
+set(gcf,'pos',[22 15 12 5])
+
+if publishFigure
+    pause(1)
+    export_fig([folder,'/',plotName,'_tau.',fileformat])
+end
+
+%% SAS force vs time
+figure(9)
+Fc_min = min([control_MPC.FcF.Data;
+    control_RMPC.FcF.Data
+    control_Youla.FcF.Data;
+    control_MPC.FcR.Data;
+    control_RMPC.FcR.Data;
+    control_Youla.FcR.Data]);
+Fc_max = 1.2*max([control_MPC.FcF.Data;
+    control_RMPC.FcF.Data
+    control_Youla.FcF.Data;
+    control_MPC.FcR.Data;
+    control_RMPC.FcR.Data;
+    control_Youla.FcR.Data]);
+time_max = max([control_MPC.FcF.Time;
+    control_RMPC.FcF.Time;
+    control_Youla.FcF.Time]);
+
+% Front
+subplot(1,2,1)
+hold on
+box on
+plot(control_Youla.FcF)
+plot(control_MPC.FcF)
+plot(control_RMPC.FcF)
+
+xlim([0 time_max])
+ylim([Fc_min Fc_max])
+
+xlabel('Time (s)')
+ylabel('SAS force $F_c$ (N)')
+title('Front axle')
+
+set(gca,'position',[0.13 0.15 0.4 0.75])
+
+% Rear
+subplot(1,2,2)
+hold on
+box on
+plot(control_Youla.FcR)
+plot(control_MPC.FcR)
+plot(control_RMPC.FcR)
+
+xlim([0 time_max])
+ylim([Fc_min Fc_max])
+
+xlabel('Time (s)')
+title('Rear axle')
+hleg = legend('Linear control','MPC','min-max MPC');
+set(hleg,'location','northeast')
+
+set(gca,'YTick',[])
+set(gca,'position',[0.56 0.15 0.4 0.75])
+
+set(gcf,'pos',[22 5 12 5])
+
+if publishFigure
+    pause(1)
+    export_fig([folder,'/',plotName,'_Fc.',fileformat])
 end
 
 %% Reset graphics parameter to default

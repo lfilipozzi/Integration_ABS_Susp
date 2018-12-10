@@ -36,10 +36,10 @@ rwR_unladen = rw + (mR+mus)*g/kt;   % Unladen rear wheel radius
 %% Resample signal to correspond to the desired fps
 % Get length of animation
 tfinal = max(vehicle.x.Time);
-tinit  = min(vehicle.x.time);
-movie_length = tfinal - tinit;
+% tinit  = min(vehicle.x.time);
+% movie_length = tfinal - tinit;
 % Set sampling time to correspond to the desired fps
-ts = 0:1/(fps*movie_length):tfinal;
+ts = 0:1/(fps):tfinal;
 % Resample required signals
 vehicle.x     = resample(vehicle.x,    ts);
 vehicle.h     = resample(vehicle.h,    ts);
